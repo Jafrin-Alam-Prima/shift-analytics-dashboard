@@ -1,7 +1,7 @@
 // Analysis engine (pure functions): the Efficiency Score, breakdown streaks,
 // and the action-phrased insights. Everything reads the shared failure set and
 // grouping from params, so the same numbers come out in local and backend mode.
-import { DEFAULT_GROUPS, FALLBACK_GROUP } from "./config.js";
+import { DEFAULT_GROUPS, FALLBACK_GROUP, DEFAULT_FAILURE_REASONS } from "./config.js";
 import { num, pct, hrs, shortDate } from "./format.js";
 
 // which group a reason belongs to (anything unlisted -> "Other")
@@ -270,4 +270,134 @@ export function analyse(records, params) {
   const streaks = findStreaks(records, params.failureReasons, params.streak);
   const insights = buildInsights(records, params.failureReasons, params.groups, streaks);
   return { efficiency: eff, streaks, insights };
+}
+
+// ---- manager decision cards (rich insights for the Insights view) -----------
+// Builds up to five plant-manager "decision cards" from outputs that are already
+// computed elsewhere (report metrics, streaks, the official efficiency split,
+// data-quality counts) — this changes no analysis math and isn't part of the
+// /analyze contract, so local⇄backend parity is untouched. Every figure is read
+// live (nothing hardcoded); the target comes from config via `target`. Findings
+// state facts; causal/operational claims are phrased as hypotheses to verify,
+// never asserted, and no field the dataset lacks is ever referenced.
+export function decisionCards(ctx) {
+  const {
+    records = [],
+    rawRecords = [],
+    report,
+    streaks = [],
+    officialEfficiency,
+    target,
+    dataQuality,
+    severityBands,
+  } = ctx || {};
+  if (!report) return [];
+
+  const cards = [];
+  // the official score is pinned to the default failure set, so name those here
+  const failureList = DEFAULT_FAILURE_REASONS.length ? DEFAULT_FAILURE_REASONS.join(" + ") : "failure categories";
+
+  // 1) largest downtime driver — top reason by hours, its share + incident count
+  const top = report.reasonContribution && report.reasonContribution[0];
+  if (top && top.hours > 0) {
+    const incidents = records.filter((r) => r.reason === top.reason).length;
+    const severity = top.pct >= 50 ? "critical" : top.pct >= 25 ? "warning" : "info";
+    cards.push({
+      key: "driver",
+      severity,
+      title: `${top.reason} is the largest downtime driver`,
+      evidence: `${top.reason} accounts for ${hrs(top.hours)} of downtime — ${pct(top.pct)} of the ${hrs(report.downtimeTotal)} lost in this period${incidents ? `, across ${incidents} incident${incidents === 1 ? "" : "s"}` : ""}. It is the single biggest contributor among the tracked failure categories.`,
+      action: `→ Prioritise ${top.reason}: it is the largest recoverable lever. Target: halving its ${hrs(top.hours)} would return about ${hrs(top.hours / 2)} of capacity.`,
+    });
+  }
+
+  // 2) efficiency gap vs the configured target + the arithmetic lever
+  if (officialEfficiency && officialEfficiency.score != null && target != null) {
+    const off = officialEfficiency;
+    const gap = off.score - target;
+    const failureHours = Math.max(0, off.total - off.productive);
+    const severity = gap >= 0 ? "good" : gap >= -5 ? "warning" : "critical";
+    let evidence = `Official efficiency is ${pct(off.score)} against the configured ${num(target, 0)}% target — ${gap >= 0 ? `${num(gap)} pts above` : `${num(-gap)} pts below`}. `;
+    let action;
+    if (failureHours > 0 && off.total - failureHours / 2 > 0) {
+      const projected = (off.productive / (off.total - failureHours / 2)) * 100;
+      evidence += `${failureList} account for ${hrs(failureHours)} of the ${hrs(off.total)} logged. As arithmetic: avoiding half of that downtime would lift efficiency to about ${pct(projected)}.`;
+      action = `→ ${gap >= 0 ? "Hold the margin by keeping" : "Close the gap by cutting"} ${failureList} downtime. Target: ~${pct(projected)} efficiency by halving those losses.`;
+    } else {
+      evidence += `No failure-category downtime was recorded, so there is no efficiency loss to recover here.`;
+      action = `→ Maintain current practice — efficiency is at or above target with no recorded failure downtime.`;
+    }
+    cards.push({
+      key: "efficiency",
+      severity,
+      title:
+        gap >= 0
+          ? `Efficiency is ${num(gap)} pts above the ${num(target, 0)}% target`
+          : `Efficiency is ${num(-gap)} pts below the ${num(target, 0)}% target`,
+      evidence,
+      action,
+    });
+  }
+
+  // 3) the real breakdown streak — dates + total streak hours, banded by config
+  if (streaks.length > 0) {
+    const s = streaks[0];
+    const high = severityBands && severityBands.high;
+    const medium = severityBands && severityBands.medium;
+    const band = high != null && s.hours >= high ? "high" : medium != null && s.hours >= medium ? "medium" : "low";
+    const severity = band === "high" ? "critical" : band === "medium" ? "warning" : "info";
+    const more = streaks.length > 1 ? ` It was one of ${streaks.length} such clusters in the period.` : "";
+    cards.push({
+      key: "streak",
+      severity,
+      title: `Breakdowns clustered over ${s.lengthDays} consecutive day${s.lengthDays === 1 ? "" : "s"}`,
+      evidence: `Failures fell on ${s.lengthDays} consecutive day(s), ${shortDate(s.start)}–${shortDate(s.end)}, totalling ${hrs(s.hours)} across ${s.count} shift${s.count === 1 ? "" : "s"} — a ${band}-severity streak.${more}`,
+      action: `→ Review the ${shortDate(s.start)}–${shortDate(s.end)} shifts side by side. The clustering is a pattern that suggests a recurring condition worth investigating before it repeats.`,
+    });
+  }
+
+  // 4) worst day by downtime, with week-over-week context
+  const pk = report.peakDowntimeDay;
+  if (pk && pk.hours > 0) {
+    let wowText = "";
+    if (report.wow) {
+      const w = report.wow;
+      const dir = w.downtimeDelta <= 0 ? "fell" : "rose";
+      wowText = ` Week over week, downtime ${dir} by ${hrs(Math.abs(w.downtimeDelta))}${w.downtimePctChange == null ? "" : ` (${num(Math.abs(w.downtimePctChange))}%)`}.`;
+    }
+    cards.push({
+      key: "worstday",
+      severity: "warning",
+      title: `${shortDate(pk.dateKey)} was the worst day for downtime`,
+      evidence: `The highest single-day downtime was ${hrs(pk.hours)} on ${shortDate(pk.dateKey)}.${wowText}`,
+      action: `→ Compare the ${shortDate(pk.dateKey)} shift logs against a normal day. A concentration like this is worth a closer look to tell a one-off from a recurring issue.`,
+    });
+  }
+
+  // 5) data-quality impact — rows flagged + the most-affected category
+  if (dataQuality && dataQuality.total > 0 && dataQuality.flaggedCount > 0) {
+    const dq = dataQuality;
+    const sevCounts = (report.severity && report.severity.dataQuality) || {};
+    const severity = dq.errorRate > 15 ? "critical" : dq.errorRate > 5 ? "warning" : "info";
+    const flaggedByReason = {};
+    for (const r of rawRecords) {
+      if (r.issues && r.issues.length) {
+        const key = r.reason || "(blank)";
+        flaggedByReason[key] = (flaggedByReason[key] || 0) + 1;
+      }
+    }
+    const topFlagged = Object.keys(flaggedByReason).sort((a, b) => flaggedByReason[b] - flaggedByReason[a])[0];
+    const mostAffected = topFlagged
+      ? ` Records labelled “${topFlagged}” were the most affected (${flaggedByReason[topFlagged]} flagged).`
+      : "";
+    cards.push({
+      key: "dataquality",
+      severity,
+      title: `${dq.flaggedCount} of ${dq.total} rows needed cleaning`,
+      evidence: `${dq.flaggedCount} rows (${pct(dq.errorRate)}) were flagged before analysis — ${num(sevCounts.critical || 0, 0)} critical, ${num(sevCounts.warning || 0, 0)} warning.${mostAffected} Every figure above is computed from the cleaned data, so these issues are not skewing the numbers.`,
+      action: `→ The flagged rows are itemised in the Data Quality report. If ${pct(dq.errorRate)} is higher than expected, tightening data capture at the source keeps future analysis clean.`,
+    });
+  }
+
+  return cards.slice(0, 5);
 }

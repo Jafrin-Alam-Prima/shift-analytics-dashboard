@@ -2,7 +2,8 @@ import { check, readDataCsv } from "./harness.mjs";
 import { parseCsvText } from "../src/lib/csv.js";
 import { autoGuessMap, applyMap } from "../src/lib/columnMap.js";
 import { buildDataset } from "../src/lib/cleaning.js";
-import { efficiency, findStreaks, buildInsights, analyse } from "../src/lib/analysis.js";
+import { efficiency, findStreaks, buildInsights, analyse, decisionCards } from "../src/lib/analysis.js";
+import { reportMetrics } from "../src/lib/report.js";
 import { defaultParams } from "../src/lib/config.js";
 
 function loadClean() {
@@ -77,6 +78,32 @@ export function run() {
   const all = analyse(ds.clean, p);
   check("analyse() returns efficiency + streaks + insights",
     all.efficiency.score != null && all.streaks.length === 1 && all.insights.length >= 3);
+
+  // ---- decision cards (rich Insights view; reads existing outputs) ----
+  const rep = reportMetrics(ds.clean, p, p.report, { issues: ds.issues });
+  const off = efficiency(ds.clean, p.failureReasons);
+  const cards = decisionCards({
+    records: ds.clean,
+    rawRecords: ds.raw,
+    report: rep,
+    streaks,
+    officialEfficiency: off,
+    target: rep.target,
+    dataQuality: { total: ds.total, flaggedCount: ds.flaggedCount, errorRate: ds.errorRate },
+    severityBands: p.report.severityBands,
+  });
+  check("decisionCards: 3–5 cards on the sample", cards.length >= 3 && cards.length <= 5, `(got ${cards.length})`);
+  check("decisionCards: each has finding + evidence + → action",
+    cards.every((c) => c.title && c.evidence && typeof c.action === "string" && c.action.startsWith("→")));
+  check("decisionCards: cites the configured target, never a hardcoded 85",
+    cards.some((c) => c.evidence.includes(`${rep.target}%`)) && !cards.some((c) => /\b85%\b/.test(c.evidence + c.action)));
+  // guard against invented hardware refs (machine IDs / "the 2 machines") while
+  // still allowing real reason labels like "Machine Jam"
+  check("decisionCards: no invented machine references",
+    !cards.some((c) => /machine\s*ids?\b|\b(\d+|two|three|the|both)\s+machines\b/i.test(c.evidence + c.action)));
+  check("decisionCards: causal claims phrased as hypotheses (suggests/investigat…)",
+    cards.some((c) => /suggests|investigat|worth a closer look|confirm/i.test(c.action)));
+  check("decisionCards: empty data yields no cards (no crash)", decisionCards({}).length === 0);
 
   // ---- selectable streak methods (S3.1) ----
   const consec = findStreaks(ds.clean, p.failureReasons, { method: "consecutive", minStreakDays: 2, maxGapDays: 0 });
