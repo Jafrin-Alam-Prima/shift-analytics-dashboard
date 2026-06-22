@@ -1,6 +1,6 @@
 // Plain Node test runner (no test framework). Run: npm test
 // Loads each suite, then prints a summary. Helpers live in harness.mjs.
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { existsSync } from "node:fs";
 import { results } from "./harness.mjs";
@@ -21,7 +21,8 @@ for (const file of suites) {
   const path = join(here, file);
   if (!existsSync(path)) continue; // suite not written yet
   console.log(`\n# ${file}`);
-  const mod = await import(path);
+  // import() needs a file:// URL, not a bare absolute path (required on Windows)
+  const mod = await import(pathToFileURL(path).href);
   await mod.run();
 }
 
