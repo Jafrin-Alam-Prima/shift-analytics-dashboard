@@ -11,13 +11,16 @@ import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
 
 export default function EfficiencySection({ dash }) {
-  const { view, params } = dash;
+  const { view } = dash;
   const rep = view.report;
   const off = view.officialEfficiency; // pinned: {score, productive, total}
   const target = rep.target;
   const gap = off.score == null ? null : off.score - target;
-  // failure categories that define "non-productive", read from config (dynamic)
-  const failureList = params.failureReasons.join(" / ");
+  // the worked derivation (with live numbers) lives in the "i" tooltip, not on screen
+  const effTip =
+    off.score == null
+      ? RULE_TEXT.efficiency
+      : `${RULE_TEXT.efficiency} Here: ${hrs(off.productive)} ÷ ${hrs(off.total)} × 100 = ${pct(off.score)}.`;
 
   const reasonColors = useMemo(() => reasonColorMap(uniqueReasons(view.cleanRecords)), [view.cleanRecords]);
 
@@ -91,20 +94,11 @@ export default function EfficiencySection({ dash }) {
 
   return (
     <section className="card report-section">
-      <h2>
-        Efficiency <InfoTip text={RULE_TEXT.efficiency} label="How efficiency is calculated" />
-      </h2>
+      <h2>Efficiency</h2>
 
       <div className="formula-box">
-        <div className="formula-line">Efficiency = (Productive ÷ Total) × 100</div>
-        <div className="muted">
-          Productive = hours whose reason is <strong>not</strong> {failureList || "a failure"} (from config).
-        </div>
-        {off.score != null && (
-          <div className="muted">
-            = ({hrs(off.productive)} ÷ {hrs(off.total)}) × 100 = <strong>{pct(off.score)}</strong>
-          </div>
-        )}
+        <span className="formula-line">Efficiency = Productive ÷ Total hours × 100</span>{" "}
+        <InfoTip text={effTip} label="How efficiency is calculated, with the worked numbers" />
       </div>
 
       <div className="eff-gauge">

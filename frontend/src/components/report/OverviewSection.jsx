@@ -236,13 +236,12 @@ export default function OverviewSection({ dash }) {
       <h4 style={{ marginTop: "1rem" }}>Week over week</h4>
       {wow ? (
         <p>
-          Latest week ({shortDate(wow.last.startKey)}–{shortDate(wow.last.endKey)}) had{" "}
-          <strong>{hrs(wow.last.downtime)}</strong> downtime vs <strong>{hrs(wow.prev.downtime)}</strong> the week before —{" "}
+          Latest week: <strong>{hrs(wow.last.downtime)}</strong> downtime —{" "}
           <span className={wow.downtimeDelta <= 0 ? "good-text" : "bad-text"}>
             {wow.downtimeDelta <= 0 ? "▼" : "▲"} {hrs(Math.abs(wow.downtimeDelta))}
             {wow.downtimePctChange == null ? "" : ` (${num(Math.abs(wow.downtimePctChange))}%)`}
-          </span>
-          .
+          </span>{" "}
+          vs the prior week.
         </p>
       ) : (
         <p className="muted">Not enough weeks in range to compare.</p>
