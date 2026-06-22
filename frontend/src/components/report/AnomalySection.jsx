@@ -17,6 +17,9 @@ const TIERS = [
   { key: "info", label: "Info", cls: "sev-info" },
 ];
 
+// severity order (lower = worse) used to pick a flagged row's representative tier
+const TIER_RANK = { critical: 0, warning: 1, duplicate: 2, info: 3 };
+
 // which cleaning control governs each issue type (mirrors the Data preparation
 // panel) — used to report, read-only, how each issue was handled.
 const ISSUE_TO_CONTROL = {
@@ -79,27 +82,38 @@ export default function AnomalySection({ dash }) {
   const { view, logical, params } = dash;
   const sev = view.report.severity.dataQuality;
 
-  // one entry per (flagged row, issue), tagged with its tier + how it was handled
+  // one entry per (flagged row, issue), tagged with its tier + how it was handled;
+  // and a row-level composition (each flagged row counted once, by its most
+  // severe issue) so the bar can show % clean vs flagged. All live, never hardcoded.
   const entries = [];
+  const rowComposition = { critical: 0, warning: 0, duplicate: 0, info: 0 };
+  let flaggedRows = 0;
   for (const rec of view.rawRecords) {
     if (!rec.issues || rec.issues.length === 0) continue;
+    flaggedRows += 1;
     const orig = logical[rec.i] || {};
     const label = `${rec.dateKey ? shortDate(rec.dateKey) : orig.date || "row " + (rec.i + 1)} · ${rec.reason || "(blank)"}`;
+    let worst = null;
     for (const type of rec.issues) {
+      const tier = issueSeverity(type);
+      if (worst == null || TIER_RANK[tier] < TIER_RANK[worst]) worst = tier;
       entries.push({
-        tier: issueSeverity(type),
+        tier,
         label,
         text: explain(type, orig, rec),
         row: rec.i + 1,
         handled: handledLabel(type, params.cleaning),
       });
     }
+    rowComposition[worst] = (rowComposition[worst] || 0) + 1;
   }
+  const cleanRows = Math.max(0, view.total - flaggedRows);
 
   return (
     <section className="card report-section">
-      <h2>Anomalies</h2>
+      <h2>Data integrity &amp; quality</h2>
 
+      <h4>Detected issues by severity</h4>
       <div className="kpi-row">
         {TIERS.map((t) => (
           <div key={t.key} className={`kpi tile-${t.key === "critical" ? "bad" : t.key === "warning" ? "warn" : "neutral"}`}>
@@ -109,7 +123,8 @@ export default function AnomalySection({ dash }) {
         ))}
       </div>
 
-      <SeverityBar severity={sev} />
+      <h4>Clean vs flagged rows</h4>
+      <SeverityBar severity={rowComposition} clean={cleanRows} />
 
       {entries.length === 0 ? (
         <p className="muted">No anomalies — the data is clean.</p>
