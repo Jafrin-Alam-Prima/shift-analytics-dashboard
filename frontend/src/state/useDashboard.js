@@ -96,11 +96,15 @@ export function useDashboard() {
     [filteredRecords, params, dataset]
   );
 
-  // the OFFICIAL score is always the literal formula with the default failure
-  // set, so it stays pinned even if someone customises the failure categories.
+  // the OFFICIAL score is the canonical headline figure: the literal formula with
+  // the default failure set, computed over the FULL (unfiltered) record set. It
+  // therefore stays pinned (~85.9% on defaults) regardless of the active filters —
+  // filters drive only the exploratory charts, not this number. It still tracks
+  // the clean/raw mode via activeRecords, and stays pinned to the default failure
+  // set even if someone customises the failure categories.
   const officialEfficiency = useMemo(
-    () => (dataset ? efficiency(filteredRecords, DEFAULT_FAILURE_REASONS) : null),
-    [filteredRecords, dataset]
+    () => (dataset ? efficiency(activeRecords, DEFAULT_FAILURE_REASONS) : null),
+    [activeRecords, dataset]
   );
   const sameSet = (a, b) =>
     a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
@@ -175,7 +179,10 @@ export function useDashboard() {
         cleanRecords: hydrateRecords(b.clean),
         rawRecords: hydrateRecords(b.raw),
         efficiency: b.efficiency,
-        officialEfficiency: b.officialEfficiency,
+        // pinned to the FULL (unfiltered) set, computed locally — identical to the
+        // backend by parity, so the headline stays canonical even in backend mode
+        // (the backend's b.officialEfficiency is over the filtered set).
+        officialEfficiency,
         failureCustomized: b.failureCustomized,
         streaks: b.streaks,
         insights: b.insights,
