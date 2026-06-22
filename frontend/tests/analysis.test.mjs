@@ -2,7 +2,7 @@ import { check, readDataCsv } from "./harness.mjs";
 import { parseCsvText } from "../src/lib/csv.js";
 import { autoGuessMap, applyMap } from "../src/lib/columnMap.js";
 import { buildDataset } from "../src/lib/cleaning.js";
-import { efficiency, findStreaks, buildInsights, analyse, decisionCards, downtimeByWeekday, downtimeByDate } from "../src/lib/analysis.js";
+import { efficiency, findStreaks, buildInsights, analyse, decisionCards, downtimeByWeekday, downtimeByDate, cleaningImpact } from "../src/lib/analysis.js";
 import { reportMetrics } from "../src/lib/report.js";
 import { defaultParams } from "../src/lib/config.js";
 
@@ -84,17 +84,18 @@ export function run() {
   const off = efficiency(ds.clean, p.failureReasons);
   const cards = decisionCards({
     records: ds.clean,
-    rawRecords: ds.raw,
     report: rep,
     streaks,
     officialEfficiency: off,
     target: rep.target,
-    dataQuality: { total: ds.total, flaggedCount: ds.flaggedCount, errorRate: ds.errorRate },
     severityBands: p.report.severityBands,
   });
   check("decisionCards: 3–5 cards on the sample", cards.length >= 3 && cards.length <= 5, `(got ${cards.length})`);
   check("decisionCards: each has finding + evidence + → action",
     cards.every((c) => c.title && c.evidence && typeof c.action === "string" && c.action.startsWith("→")));
+  check("decisionCards: operational only — no data-quality card",
+    !cards.some((c) => /needed cleaning|flagged|data quality/i.test(c.title)));
+  check("decisionCards: includes a shift-concentration card", cards.some((c) => c.key === "shift"));
   check("decisionCards: cites the configured target, never a hardcoded 85",
     cards.some((c) => c.evidence.includes(`${rep.target}%`)) && !cards.some((c) => /\b85%\b/.test(c.evidence + c.action)));
   // guard against invented hardware refs (machine IDs / "the 2 machines") while
@@ -125,6 +126,12 @@ export function run() {
     Object.values(byDate).every((v) => v.hours >= 0 && v.count >= 1));
   check("downtimeByDate: empty records -> empty map (no crash)",
     Object.keys(downtimeByDate([], p.failureReasons)).length === 0);
+
+  // ---- cleaning impact (credibility note on the Data Quality page) ----
+  const impact = cleaningImpact(ds.raw, ds.clean);
+  check("cleaningImpact: finds an overstated category (raw ≥ cleaned)",
+    impact && impact.delta > 0 && impact.rawH >= impact.cleanH);
+  check("cleaningImpact: empty inputs -> null (no crash)", cleaningImpact([], []) === null);
 
   // ---- selectable streak methods (S3.1) ----
   const consec = findStreaks(ds.clean, p.failureReasons, { method: "consecutive", minStreakDays: 2, maxGapDays: 0 });

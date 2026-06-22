@@ -336,12 +336,10 @@ export function downtimeByDate(records, failureReasons) {
 export function decisionCards(ctx) {
   const {
     records = [],
-    rawRecords = [],
     report,
     streaks = [],
     officialEfficiency,
     target,
-    dataQuality,
     severityBands,
   } = ctx || {};
   if (!report) return [];
@@ -427,30 +425,48 @@ export function decisionCards(ctx) {
     });
   }
 
-  // 5) data-quality impact — rows flagged + the most-affected category
-  if (dataQuality && dataQuality.total > 0 && dataQuality.flaggedCount > 0) {
-    const dq = dataQuality;
-    const sevCounts = (report.severity && report.severity.dataQuality) || {};
-    const severity = dq.errorRate > 15 ? "critical" : dq.errorRate > 5 ? "warning" : "info";
-    const flaggedByReason = {};
-    for (const r of rawRecords) {
-      if (r.issues && r.issues.length) {
-        const key = r.reason || "(blank)";
-        flaggedByReason[key] = (flaggedByReason[key] || 0) + 1;
-      }
-    }
-    const topFlagged = Object.keys(flaggedByReason).sort((a, b) => flaggedByReason[b] - flaggedByReason[a])[0];
-    const mostAffected = topFlagged
-      ? ` Records labelled “${topFlagged}” were the most affected (${flaggedByReason[topFlagged]} flagged).`
-      : "";
+  // 5) shift concentration — which configured window carries the most activity
+  const slots = report.shiftSlots || [];
+  const busiest = slots.filter((s) => s.count > 0).sort((a, b) => b.count - a.count)[0];
+  if (busiest) {
+    const lower = busiest.label.toLowerCase();
     cards.push({
-      key: "dataquality",
-      severity,
-      title: `${dq.flaggedCount} of ${dq.total} rows needed cleaning`,
-      evidence: `${dq.flaggedCount} rows (${pct(dq.errorRate)}) were flagged before analysis — ${num(sevCounts.critical || 0, 0)} critical, ${num(sevCounts.warning || 0, 0)} warning.${mostAffected} Every figure above is computed from the cleaned data, so these issues are not skewing the numbers.`,
-      action: `→ The flagged rows are itemised in the Data Quality report. If ${pct(dq.errorRate)} is higher than expected, tightening data capture at the source keeps future analysis clean.`,
+      key: "shift",
+      severity: "info",
+      title: `Activity concentrates in the ${lower} shift`,
+      evidence: `The ${lower} window logged the most records (${num(busiest.count, 0)}) and ${hrs(busiest.hours)} of time — more than any other shift in this period.`,
+      action: `→ ${busiest.label} is where work, and any issues, concentrate. If shift resourcing or maintenance windows are adjustable, that's the window to watch — worth confirming the timing is expected.`,
     });
   }
 
   return cards.slice(0, 5);
+}
+
+// ---- cleaning impact (credibility note for the Data Quality page) -----------
+// Which category's hours the cleaning corrected most (raw vs cleaned), so the
+// methodology page can show that handling the flagged rows kept the numbers
+// honest. Display-side, reason text normalised so casing/spacing doesn't split a
+// category. Returns null when cleaning didn't reduce any category's hours.
+export function cleaningImpact(rawRecords, cleanRecords) {
+  const norm = (s) => String(s == null ? "" : s).trim().replace(/\s+/g, " ");
+  const rawBy = {};
+  const cleanBy = {};
+  for (const r of rawRecords) {
+    const k = norm(r.reason);
+    rawBy[k] = (rawBy[k] || 0) + usable(r);
+  }
+  for (const r of cleanRecords) {
+    const k = norm(r.reason);
+    cleanBy[k] = (cleanBy[k] || 0) + usable(r);
+  }
+  let worst = null;
+  for (const reason of Object.keys(rawBy)) {
+    const rawH = rawBy[reason] || 0;
+    const cleanH = cleanBy[reason] || 0;
+    const delta = rawH - cleanH;
+    if (delta > 0.05 && (worst == null || delta > worst.delta)) {
+      worst = { reason, rawH, cleanH, delta, overstatePct: cleanH > 0 ? (delta / cleanH) * 100 : null };
+    }
+  }
+  return worst;
 }

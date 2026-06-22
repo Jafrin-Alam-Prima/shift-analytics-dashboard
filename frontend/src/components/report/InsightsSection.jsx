@@ -44,12 +44,10 @@ export default function InsightsSection({ dash }) {
 
   const cards = decisionCards({
     records: view.filtered,
-    rawRecords: view.rawRecords,
     report: view.report,
     streaks: view.streaks,
     officialEfficiency: view.officialEfficiency,
     target: view.report.target,
-    dataQuality: { total: view.total, flaggedCount: view.flaggedCount, errorRate: view.errorRate },
     severityBands: params.report.severityBands,
   });
 

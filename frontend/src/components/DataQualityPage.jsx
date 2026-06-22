@@ -8,6 +8,8 @@ import AnomalySection from "./report/AnomalySection.jsx";
 import { ISSUE_LABELS } from "../lib/cleaning.js";
 import { ISSUE_SEVERITY } from "../lib/config.js";
 import { CLEANING_RULE_TEXT } from "../lib/ruleText.js";
+import { cleaningImpact } from "../lib/analysis.js";
+import { pct, hrs, num } from "../lib/format.js";
 
 // which cleaning control governs each issue type (mirrors Data preparation)
 const ISSUE_TO_CONTROL = {
@@ -41,10 +43,23 @@ export default function DataQualityPage({ dash }) {
   }
 
   const types = Object.keys(ISSUE_LABELS);
+  const flagged = dash.view.flaggedCount;
+  const impact = cleaningImpact(dash.view.rawRecords, dash.view.cleanRecords);
 
   return (
     <div>
       <AnomalySection dash={dash} />
+
+      {flagged > 0 && (
+        <p className="custom-note">
+          <strong>Why cleaning matters:</strong>{" "}
+          {impact
+            ? impact.overstatePct != null
+              ? `handling the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} prevented ${impact.reason} from being overstated by ~${pct(impact.overstatePct)} (${hrs(impact.rawH)} raw → ${hrs(impact.cleanH)} cleaned).`
+              : `handling the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} removed ${hrs(impact.rawH)} of phantom ${impact.reason} hours that would otherwise have inflated the totals.`
+            : `the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} were corrected before any figure here was computed, so every number reflects cleaned data.`}
+        </p>
+      )}
 
       <section className="card report-section">
         <h2>How issues are detected &amp; handled</h2>
