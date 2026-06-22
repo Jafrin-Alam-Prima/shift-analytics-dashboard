@@ -10,6 +10,7 @@ import SettingsTab from "./components/SettingsTab.jsx";
 import FilterBar from "./components/FilterBar.jsx";
 import ReportsView from "./components/ReportsView.jsx";
 import SourceStatus from "./components/SourceStatus.jsx";
+import TimelineChart from "./components/charts/TimelineChart.jsx";
 import OverviewSection from "./components/report/OverviewSection.jsx";
 import ShiftSection from "./components/report/ShiftSection.jsx";
 import StreaksSection from "./components/report/StreaksSection.jsx";
@@ -49,6 +50,10 @@ function AnalyticalView({ view, dash }) {
           {dash.correctionCount} manual correction{dash.correctionCount === 1 ? "" : "s"} applied (Settings
           → Data preparation). These sit on top of the automatic cleaning.
         </p>
+      )}
+      {/* Shift analysis leads with the floating timeline (cleaned data, all reasons) */}
+      {view === "Shift analysis" && (
+        <TimelineChart records={dash.view.filtered} allRecords={dash.view.cleanRecords} groups={dash.view.groups} />
       )}
       <Section dash={dash} />
     </>

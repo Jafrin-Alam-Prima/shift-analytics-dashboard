@@ -2,6 +2,7 @@
 // calendar heat strip spanning the dataset's real date range, shaded by each
 // day's downtime hours, with streak days outlined.
 import { streakBand } from "../../lib/report.js";
+import { STREAK_METHODS } from "../../lib/config.js";
 import { hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
@@ -20,6 +21,19 @@ export default function StreaksSection({ dash }) {
   const streaks = view.streaks;
   const bands = params.report.severityBands;
   const range = view.report.dateRange;
+
+  // plain-language "Method & assumptions", read straight from config (dynamic)
+  const streak = params.streak;
+  const methodLabel = (STREAK_METHODS.find((m) => m.value === streak.method) || {}).label || streak.method;
+  let methodText;
+  if (streak.method === "window") {
+    methodText = `failure shifts that fall within a ${streak.windowHours}-hour window of each other (at least ${streak.minStreakShifts} shift${streak.minStreakShifts === 1 ? "" : "s"})`;
+  } else if (streak.method === "shift") {
+    methodText = `back-to-back failure shifts (at least ${streak.minStreakShifts} in a row)`;
+  } else {
+    methodText = `consecutive calendar days that each have at least one failure shift (minimum ${streak.minStreakDays} day${streak.minStreakDays === 1 ? "" : "s"}, gaps up to ${streak.maxGapDays} day${streak.maxGapDays === 1 ? "" : "s"})`;
+  }
+  const failureList = params.failureReasons.join(", ");
 
   // per-day downtime (failure hours) from the same filtered records
   const downByDay = {};
@@ -49,6 +63,23 @@ export default function StreaksSection({ dash }) {
         Breakdown streaks <InfoTip text={RULE_TEXT.streak} label="What counts as a streak" />
         <InfoTip text={RULE_TEXT.severityBands} label="How streak severity is banded" />
       </h2>
+
+      <div className="method-card">
+        <h4>Method &amp; assumptions</h4>
+        <ul className="method-list">
+          <li>
+            A <strong>failure</strong> is any shift whose reason is in: {failureList || "—"}.
+          </li>
+          <li>
+            Method — <strong>{methodLabel}</strong>: a streak is {methodText}.
+          </li>
+          <li>
+            Severity by total breakdown hours: <strong>low</strong> below {hrs(bands.medium)}, <strong>medium</strong>{" "}
+            {hrs(bands.medium)}–{hrs(bands.high)}, <strong>high</strong> at {hrs(bands.high)} and above.
+          </li>
+          <li className="muted">Read from Settings → Analysis settings — change a value and streaks recompute.</li>
+        </ul>
+      </div>
 
       {streaks.length === 0 ? (
         <p className="muted">No breakdown streaks with the current settings.</p>

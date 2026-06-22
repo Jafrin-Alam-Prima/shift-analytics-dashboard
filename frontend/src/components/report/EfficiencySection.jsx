@@ -11,11 +11,13 @@ import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
 
 export default function EfficiencySection({ dash }) {
-  const { view } = dash;
+  const { view, params } = dash;
   const rep = view.report;
   const off = view.officialEfficiency; // pinned: {score, productive, total}
   const target = rep.target;
   const gap = off.score == null ? null : off.score - target;
+  // failure categories that define "non-productive", read from config (dynamic)
+  const failureList = params.failureReasons.join(" / ");
 
   const reasonColors = useMemo(() => reasonColorMap(uniqueReasons(view.cleanRecords)), [view.cleanRecords]);
 
@@ -24,7 +26,7 @@ export default function EfficiencySection({ dash }) {
     () => ({
       type: "doughnut",
       data: {
-        labels: ["Productive", "Downtime"],
+        labels: ["Productive", "Non-productive"],
         datasets: [{ data: [Number(off.productive.toFixed(2)), Number(nonProductive.toFixed(2))], backgroundColor: ["#16a34a", "#dc2626"] }],
       },
       options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
@@ -92,6 +94,18 @@ export default function EfficiencySection({ dash }) {
       <h2>
         Efficiency <InfoTip text={RULE_TEXT.efficiency} label="How efficiency is calculated" />
       </h2>
+
+      <div className="formula-box">
+        <div className="formula-line">Efficiency = (Productive ÷ Total) × 100</div>
+        <div className="muted">
+          Productive = hours whose reason is <strong>not</strong> {failureList || "a failure"} (from config).
+        </div>
+        {off.score != null && (
+          <div className="muted">
+            = ({hrs(off.productive)} ÷ {hrs(off.total)}) × 100 = <strong>{pct(off.score)}</strong>
+          </div>
+        )}
+      </div>
 
       <div className="eff-gauge">
         <div className="gauge-num">{pct(off.score)}</div>
