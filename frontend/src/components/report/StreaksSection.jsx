@@ -52,7 +52,6 @@ export default function StreaksSection({ dash }) {
     <section className="card report-section">
       <h2>
         Breakdown streaks <InfoTip text={RULE_TEXT.streak} label="What counts as a streak" />
-        <InfoTip text={RULE_TEXT.severityBands} label="How streak severity is banded" />
       </h2>
 
       <div className="method-card">

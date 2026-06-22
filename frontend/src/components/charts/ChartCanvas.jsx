@@ -2,6 +2,7 @@
 // updates on change, tidies up on unmount, and (optionally) offers a PNG export.
 import { useEffect, useRef } from "react";
 import { Chart, registerables } from "chart.js";
+import { IconDownload } from "../icons.jsx";
 
 Chart.register(...registerables);
 
@@ -34,8 +35,8 @@ export default function ChartCanvas({ config, height = 320, label, downloadName 
   return (
     <div className="chart-canvas-wrap">
       {downloadName && (
-        <button className="png-btn no-print" onClick={savePng} title="Download as PNG">
-          PNG
+        <button className="png-btn no-print" onClick={savePng} title="Download as PNG" aria-label="Download chart as PNG">
+          <IconDownload />
         </button>
       )}
       <div style={{ height }}>

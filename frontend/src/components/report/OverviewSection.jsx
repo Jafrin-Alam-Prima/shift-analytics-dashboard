@@ -81,7 +81,8 @@ export default function OverviewSection({ dash }) {
           },
         ],
       },
-      options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
+      // legend beneath the donut so it sits close, not across a wide right-hand gap
+      options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } } },
     }),
     [rep.reasonContribution, reasonColors]
   );

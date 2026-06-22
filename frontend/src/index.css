@@ -163,7 +163,8 @@ code {
   background: var(--panel);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
-  padding: 0.7rem 1.25rem;
+  /* extra right gutter so the last control (settings gear) isn't flush to the edge */
+  padding: 0.7rem 1.75rem 0.7rem 1.25rem;
 }
 .topbar-title {
   font-size: 1.05rem;
@@ -777,13 +778,19 @@ input[type="number"] {
   top: -2px;
   right: 0;
   z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   background: var(--panel);
   border-radius: 6px;
-  font-size: 0.72rem;
-  padding: 0.15rem 0.4rem;
+  padding: 0.25rem;
   cursor: pointer;
   color: var(--muted);
+}
+.png-btn svg {
+  width: 15px;
+  height: 15px;
 }
 .png-btn:hover {
   color: var(--accent);
