@@ -1,11 +1,13 @@
-// Streaks upgrade: a severity card per streak (band from the config rule) and a
-// calendar heat strip spanning the dataset's real date range, shaded by each
-// day's downtime hours, with streak days outlined.
+// Streaks: a severity card per streak (band from the config rule), the "Method &
+// assumptions" note, and a month-style downtime calendar — each day shaded by its
+// failure hours, streak days outlined by severity.
 import { streakBand } from "../../lib/report.js";
 import { STREAK_METHODS } from "../../lib/config.js";
+import { downtimeByDate } from "../../lib/analysis.js";
 import { hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
+import DowntimeCalendar from "../charts/DowntimeCalendar.jsx";
 
 const BAND_CLASS = { low: "band-low", medium: "band-medium", high: "band-high" };
 
@@ -35,26 +37,15 @@ export default function StreaksSection({ dash }) {
   }
   const failureList = params.failureReasons.join(", ");
 
-  // per-day downtime (failure hours) from the same filtered records
-  const downByDay = {};
-  for (const r of view.filtered) {
-    if (r.dateKey && params.failureReasons.includes(r.reason)) {
-      downByDay[r.dateKey] = (downByDay[r.dateKey] || 0) + (r.hours > 0 ? r.hours : 0);
-    }
-  }
-  const maxDown = Math.max(1, ...Object.values(downByDay));
-
-  // days covered by any streak (start..end inclusive)
-  const streakDays = new Set();
+  // calendar inputs (display-side): per-date failure hours/incidents, which dates
+  // have any record, and which days fall in a streak (tagged with its severity).
+  const byDate = downtimeByDate(view.filtered, params.failureReasons);
+  const datesWithData = new Set(view.filtered.map((r) => r.dateKey).filter(Boolean));
+  const streakDayBand = {};
   for (const s of streaks) {
     if (!s.start || !s.end) continue;
-    for (let d = dn(s.start); d <= dn(s.end); d++) streakDays.add(keyAt(d));
-  }
-
-  // every calendar day in the real range
-  const days = [];
-  if (range.min && range.max) {
-    for (let d = dn(range.min); d <= dn(range.max); d++) days.push(keyAt(d));
+    const band = streakBand(s.hours, bands);
+    for (let d = dn(s.start); d <= dn(s.end); d++) streakDayBand[keyAt(d)] = band;
   }
 
   return (
@@ -103,30 +94,7 @@ export default function StreaksSection({ dash }) {
       )}
 
       <h4>Downtime calendar ({range.min ? `${shortDate(range.min)} – ${shortDate(range.max)}` : "no range"})</h4>
-      {days.length === 0 ? (
-        <p className="muted">No dated records.</p>
-      ) : (
-        <>
-          <div className="heat-strip">
-            {days.map((k) => {
-              const h = downByDay[k] || 0;
-              const intensity = h > 0 ? 0.15 + 0.85 * (h / maxDown) : 0;
-              const inStreak = streakDays.has(k);
-              return (
-                <span
-                  key={k}
-                  className={inStreak ? "heat-cell in-streak" : "heat-cell"}
-                  style={{ background: h > 0 ? `rgba(220,38,38,${intensity.toFixed(2)})` : "var(--soft)" }}
-                  title={`${shortDate(k)}: ${hrs(h)} downtime${inStreak ? " (streak)" : ""}`}
-                />
-              );
-            })}
-          </div>
-          <p className="muted heat-note">
-            Shaded by daily downtime hours; outlined cells are part of a streak.
-          </p>
-        </>
-      )}
+      <DowntimeCalendar byDate={byDate} datesWithData={datesWithData} streakDayBand={streakDayBand} range={range} />
     </section>
   );
 }

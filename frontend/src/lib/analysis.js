@@ -312,6 +312,19 @@ export function downtimeByWeekday(records, failureReasons) {
   return { weekdays, overallAvg, worst };
 }
 
+// per-date failure-hours + incident count (display-side; powers the streak
+// calendar). Pure and additive — no official metric, not in the /analyze contract.
+export function downtimeByDate(records, failureReasons) {
+  const map = {};
+  for (const r of records) {
+    if (!r.dateKey || !failureReasons.includes(r.reason)) continue;
+    if (!map[r.dateKey]) map[r.dateKey] = { hours: 0, count: 0 };
+    map[r.dateKey].hours += usable(r);
+    map[r.dateKey].count += 1;
+  }
+  return map;
+}
+
 // ---- manager decision cards (rich insights for the Insights view) -----------
 // Builds up to five plant-manager "decision cards" from outputs that are already
 // computed elsewhere (report metrics, streaks, the official efficiency split,

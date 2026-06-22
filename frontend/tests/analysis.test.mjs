@@ -2,7 +2,7 @@ import { check, readDataCsv } from "./harness.mjs";
 import { parseCsvText } from "../src/lib/csv.js";
 import { autoGuessMap, applyMap } from "../src/lib/columnMap.js";
 import { buildDataset } from "../src/lib/cleaning.js";
-import { efficiency, findStreaks, buildInsights, analyse, decisionCards, downtimeByWeekday } from "../src/lib/analysis.js";
+import { efficiency, findStreaks, buildInsights, analyse, decisionCards, downtimeByWeekday, downtimeByDate } from "../src/lib/analysis.js";
 import { reportMetrics } from "../src/lib/report.js";
 import { defaultParams } from "../src/lib/config.js";
 
@@ -116,6 +116,15 @@ export function run() {
     wk.worst && wk.weekdays.every((w) => w.avgDowntime == null || w.avgDowntime <= wk.worst.avgDowntime));
   check("downtimeByWeekday: empty records -> no worst (no crash)",
     downtimeByWeekday([], p.failureReasons).worst === null);
+
+  // ---- per-date downtime (streak calendar input) ----
+  const byDate = downtimeByDate(ds.clean, p.failureReasons);
+  check("downtimeByDate: Oct 8 carries failure hours + incident count",
+    byDate["2025-10-08"] && byDate["2025-10-08"].hours > 0 && byDate["2025-10-08"].count >= 1);
+  check("downtimeByDate: only failure-reason hours are counted",
+    Object.values(byDate).every((v) => v.hours >= 0 && v.count >= 1));
+  check("downtimeByDate: empty records -> empty map (no crash)",
+    Object.keys(downtimeByDate([], p.failureReasons)).length === 0);
 
   // ---- selectable streak methods (S3.1) ----
   const consec = findStreaks(ds.clean, p.failureReasons, { method: "consecutive", minStreakDays: 2, maxGapDays: 0 });

@@ -1451,3 +1451,118 @@ input[type="number"] {
   font-weight: 700;
   color: var(--ink);
 }
+
+/* ---- month-style downtime calendar (streaks) ---- */
+.cal-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+.cal-month {
+  flex: 0 0 auto;
+  width: 300px;
+  max-width: 100%;
+}
+.cal-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-wd {
+  font-size: 0.66rem;
+  text-align: center;
+  color: var(--muted);
+  padding-bottom: 0.15rem;
+}
+.cal-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+}
+.cal-empty {
+  border: none;
+  background: none;
+}
+.cal-nodata {
+  background: var(--soft);
+}
+.cal-day {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 0.6rem;
+  line-height: 1;
+  color: var(--ink);
+  opacity: 0.75;
+  text-shadow: 0 0 2px var(--panel), 0 0 2px var(--panel);
+}
+/* streak-day outlines by severity */
+.cal-high {
+  outline: 2px solid var(--bad);
+  outline-offset: -2px;
+  border-color: var(--bad);
+}
+.cal-medium {
+  outline: 2px solid var(--warn);
+  outline-offset: -2px;
+  border-color: var(--warn);
+}
+.cal-low {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-color: var(--accent);
+}
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.cal-legend-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cal-legend-scale i {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.cal-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.cal-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid var(--line);
+}
+.cal-swatch.cal-high {
+  outline: 2px solid var(--bad);
+  outline-offset: -2px;
+}
+.cal-swatch.cal-medium {
+  outline: 2px solid var(--warn);
+  outline-offset: -2px;
+}
+.cal-swatch.cal-low {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.cal-swatch.cal-nodata {
+  background: var(--soft);
+}
