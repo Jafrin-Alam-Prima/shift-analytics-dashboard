@@ -1,8 +1,17 @@
-// Persistent left navigation — the five analytical views, nothing else. Data
-// Quality and Settings live in the header (trust chip + gear), not here, so the
-// nav stays focused on the business story. The current view is highlighted; on
-// mobile the sidebar becomes a drawer toggled from the header.
-import { IconDashboard, IconClock, IconStreak, IconGauge, IconTrends, IconInsight } from "./icons.jsx";
+// Persistent left navigation. The analytical views lead; a separated
+// "Methodology" group below the divider holds Data Quality, which opens the
+// read-only integrity & methodology report (the same page as the header trust
+// chip) — supporting evidence, not part of the operational story. Settings still
+// lives behind the header gear. On mobile the sidebar is a drawer.
+import {
+  IconDashboard,
+  IconClock,
+  IconStreak,
+  IconGauge,
+  IconTrends,
+  IconInsight,
+  IconQuality,
+} from "./icons.jsx";
 
 const ICONS = {
   Overview: IconDashboard,
@@ -13,7 +22,7 @@ const ICONS = {
   Insights: IconInsight,
 };
 
-export default function Sidebar({ views, active, onSelect, open, onClose }) {
+export default function Sidebar({ views, active, onSelect, open, onClose, onOpenDataQuality, dataQualityActive }) {
   return (
     <>
       {open && <div className="sidebar-scrim" onClick={onClose} />}
@@ -40,6 +49,22 @@ export default function Sidebar({ views, active, onSelect, open, onClose }) {
               </button>
             );
           })}
+        </nav>
+
+        <div className="side-divider" />
+        <div className="side-group-label">Methodology</div>
+        <nav className="side-nav" aria-label="Methodology">
+          <button
+            className={dataQualityActive ? "side-link active" : "side-link"}
+            onClick={() => {
+              if (onOpenDataQuality) onOpenDataQuality();
+              if (onClose) onClose();
+            }}
+            aria-current={dataQualityActive ? "page" : undefined}
+          >
+            <IconQuality />
+            <span>Data Quality</span>
+          </button>
         </nav>
       </aside>
     </>

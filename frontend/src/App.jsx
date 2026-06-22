@@ -111,6 +111,8 @@ export default function App() {
         onSelect={setView}
         open={navOpen}
         onClose={() => setNavOpen(false)}
+        onOpenDataQuality={() => setOverlay("dataQuality")}
+        dataQualityActive={overlay === "dataQuality"}
       />
 
       <div className="main">
