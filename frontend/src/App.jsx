@@ -1,6 +1,7 @@
 // App shell: a persistent left sidebar for navigation + a slim sticky top bar,
-// with the active view rendered in the main content area. (Reports view is added
-// by the app-upgrade plan.)
+// with the active view rendered in the main content area. The six analytical
+// sections each get their own view (reusing the report/ section components);
+// Reports + Settings sit in a separate nav group below them.
 import { useEffect, useState } from "react";
 import { useDashboard } from "./state/useDashboard.js";
 import Sidebar from "./components/Sidebar.jsx";
@@ -9,15 +10,64 @@ import SettingsTab from "./components/SettingsTab.jsx";
 import DataQualityTab from "./components/DataQualityTab.jsx";
 import CorrectionsPanel from "./components/CorrectionsPanel.jsx";
 import SimilarityPanel from "./components/SimilarityPanel.jsx";
-import DashboardTab from "./components/DashboardTab.jsx";
+import FilterBar from "./components/FilterBar.jsx";
 import ReportsView from "./components/ReportsView.jsx";
 import SourceStatus from "./components/SourceStatus.jsx";
+import OverviewSection from "./components/report/OverviewSection.jsx";
+import ShiftSection from "./components/report/ShiftSection.jsx";
+import StreaksSection from "./components/report/StreaksSection.jsx";
+import EfficiencySection from "./components/report/EfficiencySection.jsx";
+import AnomalySection from "./components/report/AnomalySection.jsx";
+import InsightsSection from "./components/report/InsightsSection.jsx";
 
-const VIEWS = ["Dashboard", "Data quality", "Reports", "Settings"];
+// The six analytical sections, each its own view. Reports + Settings are kept
+// exactly as they were, in a separate group below.
+const ANALYTICAL_VIEWS = ["Overview", "Shift analysis", "Breakdown streaks", "Efficiency score", "Anomaly report", "Insights"];
+const SECONDARY_VIEWS = ["Reports", "Settings"];
+
+// which report/ section renders for each analytical view (Anomaly report is
+// handled separately — it doubles as the data-quality hub).
+const SECTION_FOR = {
+  Overview: OverviewSection,
+  "Shift analysis": ShiftSection,
+  "Breakdown streaks": StreaksSection,
+  "Efficiency score": EfficiencySection,
+  Insights: InsightsSection,
+};
+
+// content for one analytical view: a shared filter bar + correction disclosure,
+// then the section. The Anomaly report instead shows the anomaly section plus the
+// cleaning / corrections / similarity tools that used to live on Data quality.
+function AnalyticalView({ view, dash }) {
+  if (view === "Anomaly report") {
+    return (
+      <>
+        <AnomalySection dash={dash} />
+        <DataQualityTab view={dash.view} params={dash.params} setCleaning={dash.setCleaning} />
+        <CorrectionsPanel dash={dash} />
+        <SimilarityPanel dash={dash} />
+      </>
+    );
+  }
+
+  const Section = SECTION_FOR[view];
+  return (
+    <>
+      <FilterBar dash={dash} />
+      {dash.correctionCount > 0 && (
+        <p className="custom-note">
+          {dash.correctionCount} manual correction{dash.correctionCount === 1 ? "" : "s"} applied (Anomaly
+          report → Manual corrections). These sit on top of the automatic cleaning.
+        </p>
+      )}
+      <Section dash={dash} />
+    </>
+  );
+}
 
 export default function App() {
   const dash = useDashboard();
-  const [view, setView] = useState("Dashboard");
+  const [view, setView] = useState("Overview");
   const [navOpen, setNavOpen] = useState(false);
   const [theme, setTheme] = useState(() =>
     typeof localStorage !== "undefined" && localStorage.getItem("theme") === "dark" ? "dark" : "light"
@@ -32,14 +82,18 @@ export default function App() {
     }
   }, [theme]);
 
+  const isAnalytical = ANALYTICAL_VIEWS.includes(view);
+
   return (
     <div className="layout">
       <Sidebar
-        views={VIEWS}
+        views={ANALYTICAL_VIEWS}
+        secondary={SECONDARY_VIEWS}
         active={view}
         onSelect={setView}
         open={navOpen}
         onClose={() => setNavOpen(false)}
+        badges={{ "Anomaly report": dash.anomalyCount }}
       />
 
       <div className="main">
@@ -86,25 +140,12 @@ export default function App() {
                 </div>
               )}
 
-              {view === "Dashboard" &&
+              {isAnalytical &&
                 (dash.ready ? (
-                  <DashboardTab dash={dash} />
+                  <AnalyticalView view={view} dash={dash} />
                 ) : (
                   <div className="card">
-                    <p className="muted">Map the columns in Settings to see the dashboard.</p>
-                  </div>
-                ))}
-
-              {view === "Data quality" &&
-                (dash.ready ? (
-                  <>
-                    <DataQualityTab view={dash.view} params={dash.params} setCleaning={dash.setCleaning} />
-                    <CorrectionsPanel dash={dash} />
-                    <SimilarityPanel dash={dash} />
-                  </>
-                ) : (
-                  <div className="card">
-                    <p className="muted">Map the columns in Settings to see data quality.</p>
+                    <p className="muted">Map the columns in Settings to see this section.</p>
                   </div>
                 ))}
 

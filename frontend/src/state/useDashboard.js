@@ -208,6 +208,14 @@ export function useDashboard() {
     };
   }, [effectiveSource, backendResult, dataset, analysis, filteredRecords, officialEfficiency, failureCustomized, reportLocal, params.groups]);
 
+  // live count of detected data-quality issues (sum of the cleaning engine's
+  // per-issue counts) — drives the badge on the Anomaly report nav item. Computed
+  // from the active view, never hardcoded; 0 when no data is loaded.
+  const anomalyCount = useMemo(
+    () => (view && view.issues ? view.issues.reduce((s, it) => s + (it.count || 0), 0) : 0),
+    [view]
+  );
+
   // helper for changing one cleaning strategy
   function setCleaning(issueKey, value) {
     setParams((p) => ({ ...p, cleaning: { ...p.cleaning, [issueKey]: value } }));
@@ -401,6 +409,7 @@ export function useDashboard() {
     checkBackend,
     effectiveSource,
     view,
+    anomalyCount,
     // dataset management
     datasetName,
     isSample,

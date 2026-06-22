@@ -56,3 +56,53 @@ export function IconMenu(props) {
     </svg>
   );
 }
+
+// Shift analysis: a clock.
+export function IconClock(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+// Breakdown streaks: a rising trend line.
+export function IconStreak(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M21 7h-5M21 7v5" />
+    </svg>
+  );
+}
+
+// Efficiency score: a gauge.
+export function IconGauge(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 18a8 8 0 1 1 16 0" />
+      <path d="M12 18l4-5" />
+    </svg>
+  );
+}
+
+// Anomaly report: an alert triangle.
+export function IconAlert(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+      <path d="M12 9v4M12 17h.01" />
+    </svg>
+  );
+}
+
+// Insights: a lightbulb.
+export function IconInsight(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 18h6M10 21h4" />
+      <path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.5 1-2.1A6 6 0 0 0 12 3z" />
+    </svg>
+  );
+}

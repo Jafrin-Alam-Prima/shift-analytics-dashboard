@@ -121,6 +121,33 @@ code {
   color: #fff;
 }
 
+/* second nav group (Reports + Settings), separated by a faint divider */
+.side-nav-secondary {
+  margin-top: 0.4rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* small live count badge on a nav item (e.g. data-quality issues) */
+.nav-badge {
+  margin-left: auto;
+  background: var(--warn);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.side-link.active .nav-badge {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .main {
   display: flex;
   flex-direction: column;
