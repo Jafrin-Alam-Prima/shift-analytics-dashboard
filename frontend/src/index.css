@@ -1139,26 +1139,6 @@ input[type="number"] {
 }
 
 /* downtime calendar heat strip */
-.heat-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-.heat-cell {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-  display: inline-block;
-}
-.heat-cell.in-streak {
-  outline: 2px solid var(--bad);
-  outline-offset: 0;
-}
-.heat-note {
-  font-size: 0.78rem;
-  margin-top: 0.4rem;
-}
 .chart-note {
   font-size: 0.8rem;
   margin: 0.4rem 0 0;
@@ -1565,4 +1545,31 @@ input[type="number"] {
 }
 .cal-swatch.cal-nodata {
   background: var(--soft);
+}
+
+/* ---- polish: consistent transitions + clear hover states ---- */
+.kpi,
+.decision-card,
+.streak-card,
+.mini-chart {
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+.kpi:hover,
+.decision-card:hover,
+.streak-card:hover {
+  box-shadow: 0 4px 16px rgba(16, 24, 40, 0.1);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .kpi:hover,
+[data-theme="dark"] .decision-card:hover,
+[data-theme="dark"] .streak-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+/* calendar day hover ring (keeps any severity outline underneath) */
+.cal-cell:not(.cal-empty) {
+  transition: box-shadow 0.12s ease;
+}
+.cal-cell:not(.cal-empty):hover {
+  box-shadow: 0 0 0 2px var(--accent);
+  cursor: default;
 }
