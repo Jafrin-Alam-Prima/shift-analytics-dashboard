@@ -5,7 +5,7 @@
 import { useMemo } from "react";
 import ChartCanvas from "../charts/ChartCanvas.jsx";
 import SeverityBar from "./SeverityBar.jsx";
-import { reasonColorMap } from "../../lib/colors.js";
+import { reasonColorMap, CHART_COLORS } from "../../lib/colors.js";
 import { uniqueReasons } from "../../lib/cleaning.js";
 import { num, pct, hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
@@ -97,14 +97,14 @@ export default function OverviewSection({ dash }) {
             label: "Downtime h",
             data: dayValues,
             // the worst day is marked with a darker bar
-            backgroundColor: dayValues.map((_, i) => (i === worstIdx ? "#7f1d1d" : "#dc2626")),
+            backgroundColor: dayValues.map((_, i) => (i === worstIdx ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
             order: 2,
           },
           {
             type: "line",
             label: `Daily avg ${num(dailyAvg)} h`,
             data: dayValues.map(() => Number(dailyAvg.toFixed(2))),
-            borderColor: "#475569",
+            borderColor: CHART_COLORS.reference,
             borderDash: [6, 4],
             pointRadius: 0,
             fill: false,
