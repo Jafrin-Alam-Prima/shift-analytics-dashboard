@@ -261,6 +261,22 @@ code {
   .reset-btn {
     margin-left: 0;
   }
+  /* let the busier header wrap instead of overflowing on small screens */
+  .topbar {
+    flex-wrap: wrap;
+  }
+  .topbar-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .topbar-subtitle {
+    white-space: normal;
+  }
+  .modal-body {
+    padding: 0.85rem;
+  }
 }
 
 .card {
@@ -333,6 +349,9 @@ input[type="number"] {
 
 /* theme toggle button (top bar) */
 .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: 1px solid var(--line);
   background: var(--panel);
   color: var(--ink);
@@ -344,6 +363,146 @@ input[type="number"] {
 .icon-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.icon-btn:disabled:hover {
+  border-color: var(--line);
+  color: var(--ink);
+}
+.icon-btn-label {
+  font-size: 0.82rem;
+}
+
+/* ---- header: titles, trust chip, export menu ---- */
+.topbar-titles {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+.topbar-subtitle {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trust-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.trust-chip svg {
+  width: 15px;
+  height: 15px;
+}
+.trust-chip:hover {
+  border-color: var(--accent);
+}
+.trust-chip.chip-good {
+  color: var(--good);
+}
+.trust-chip.chip-warn {
+  color: var(--warn);
+}
+.trust-chip.chip-bad {
+  color: var(--bad);
+}
+
+.export-menu {
+  position: relative;
+}
+.menu-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 210px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  z-index: 30;
+}
+.menu-pop button {
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--ink);
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.menu-pop button:hover {
+  background: var(--soft);
+}
+.menu-note {
+  font-size: 0.72rem;
+  margin: 0.2rem 0 0;
+  padding: 0.3rem 0.6rem 0.1rem;
+  border-top: 1px solid var(--line);
+}
+
+/* ---- overlay modal (Settings, Data Quality) ---- */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3vh 1rem;
+  z-index: 50;
+}
+.modal-panel {
+  width: 100%;
+  max-width: 960px;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.modal-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+}
+.modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
 }
 
 /* KPI cards */
@@ -1157,4 +1316,28 @@ input[type="number"] {
   margin: 0 0 0.4rem;
   font-size: 0.95rem;
   color: var(--ink);
+}
+
+/* ---- analyst-grade polish: spacing + typographic hierarchy ---- */
+.content {
+  max-width: 1240px;
+}
+.report-section {
+  padding: 1.25rem 1.5rem;
+}
+.report-section h2 {
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+}
+.report-section h4 {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.kpi-value {
+  letter-spacing: -0.01em;
+}
+/* the report sections breathe a little more between each other */
+.report-section + .report-section,
+.content > .card + .card {
+  margin-top: 0.25rem;
 }

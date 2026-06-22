@@ -24,7 +24,7 @@ export default function SettingsTab({ dash }) {
             <p className="muted">
               Choose how each data issue is cleaned, make auditable per-row corrections (reversible and
               disclosed), and review similarity suggestions (suggestion-only — nothing auto-merges). These
-              feed the analytics and the read-only Anomaly report.
+              feed the analytics and the read-only Data Quality report (the trust chip in the header).
             </p>
           </section>
           <DataQualityTab view={dash.view} params={dash.params} setCleaning={dash.setCleaning} />
