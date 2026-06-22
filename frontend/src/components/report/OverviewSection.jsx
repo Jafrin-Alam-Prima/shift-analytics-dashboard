@@ -51,6 +51,11 @@ export default function OverviewSection({ dash }) {
   const downtimePctOfTotal = totalHours > 0 ? (rep.downtimeTotal / totalHours) * 100 : 0;
   const flagTone = view.errorRate > 15 ? "bad" : view.errorRate > 5 ? "warn" : "good";
 
+  // productive vs non-productive split, straight from the pinned official score
+  const off = view.officialEfficiency; // { score, productive, total }
+  const productive = off.productive || 0;
+  const nonProductive = off.total != null ? Math.max(0, off.total - productive) : 0;
+
   // daily downtime (failure hours per day) — computed from the same records
   const dayMap = {};
   for (const r of records) {
@@ -59,6 +64,10 @@ export default function OverviewSection({ dash }) {
     }
   }
   const dayKeys = Object.keys(dayMap).sort();
+  const dayValues = dayKeys.map((k) => Number(dayMap[k].toFixed(2)));
+  // worst day + daily average, to mark/annotate the daily-downtime bar (live)
+  const worstIdx = dayValues.length ? dayValues.indexOf(Math.max(...dayValues)) : -1;
+  const dailyAvg = dayValues.length ? dayValues.reduce((a, b) => a + b, 0) / dayValues.length : 0;
 
   const donutConfig = useMemo(
     () => ({
@@ -82,17 +91,69 @@ export default function OverviewSection({ dash }) {
       type: "bar",
       data: {
         labels: dayKeys.map((k) => shortDate(k)),
-        datasets: [{ label: "Downtime h", data: dayKeys.map((k) => Number(dayMap[k].toFixed(2))), backgroundColor: "#dc2626" }],
+        datasets: [
+          {
+            label: "Downtime h",
+            data: dayValues,
+            // the worst day is marked with a darker bar
+            backgroundColor: dayValues.map((_, i) => (i === worstIdx ? "#7f1d1d" : "#dc2626")),
+            order: 2,
+          },
+          {
+            type: "line",
+            label: `Daily avg ${num(dailyAvg)} h`,
+            data: dayValues.map(() => Number(dailyAvg.toFixed(2))),
+            borderColor: "#475569",
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+            order: 1,
+          },
+        ],
       },
       options: {
         maintainAspectRatio: false,
         animation: false,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
         scales: { y: { beginAtZero: true, title: { display: true, text: "Downtime h" } } },
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(dayKeys), JSON.stringify(dayMap)]
+    [JSON.stringify(dayValues), worstIdx, dailyAvg]
+  );
+
+  // Productive vs Non-productive (tied to the efficiency score). Semantic colours
+  // (green/red), not categories, so no reasonColorMap here.
+  const prodDonutConfig = useMemo(
+    () => ({
+      type: "doughnut",
+      data: {
+        labels: ["Productive", "Non-productive"],
+        datasets: [{ data: [Number(productive.toFixed(2)), Number(nonProductive.toFixed(2))], backgroundColor: ["#16a34a", "#dc2626"] }],
+      },
+      options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
+    }),
+    [productive, nonProductive]
+  );
+
+  // Top reasons by downtime hours (Pareto-style, already sorted high→low),
+  // coloured via reasonColorMap so any reason — new ones included — gets a colour.
+  const paretoConfig = useMemo(
+    () => ({
+      type: "bar",
+      data: {
+        labels: rep.reasonContribution.map((c) => c.reason),
+        datasets: [{ label: "Downtime h", data: rep.reasonContribution.map((c) => Number(c.hours.toFixed(2))), backgroundColor: rep.reasonContribution.map((c) => reasonColors[c.reason] || "#94a3b8") }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        indexAxis: "y",
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${hrs(ctx.parsed.x)} (${pct(rep.reasonContribution[ctx.dataIndex].pct)})` } } },
+        scales: { x: { beginAtZero: true, title: { display: true, text: "Downtime h" } } },
+      },
+    }),
+    [rep.reasonContribution, reasonColors]
   );
 
   const wow = rep.wow;
@@ -136,7 +197,36 @@ export default function OverviewSection({ dash }) {
         <div className="mini-chart">
           <h4>Daily downtime</h4>
           {dayKeys.length ? (
-            <ChartCanvas config={dailyConfig} height={240} downloadName="daily-downtime" label="Daily downtime" />
+            <>
+              <ChartCanvas config={dailyConfig} height={240} downloadName="daily-downtime" label="Daily downtime with daily-average line" />
+              <p className="muted chart-note">
+                Worst day: <strong>{shortDate(dayKeys[worstIdx])}</strong> ({hrs(dayValues[worstIdx])}) · daily avg {hrs(dailyAvg)}
+              </p>
+            </>
+          ) : (
+            <p className="muted">No downtime in range.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="chart-grid" style={{ marginTop: "1rem" }}>
+        <div className="mini-chart">
+          <h4>Productive vs non-productive</h4>
+          {off.total ? (
+            <>
+              <ChartCanvas config={prodDonutConfig} height={240} downloadName="productive-vs-nonproductive" label="Productive versus non-productive hours" />
+              <p className="muted chart-note">
+                {hrs(productive)} productive · {hrs(nonProductive)} non-productive ({pct(officialScore)} efficient)
+              </p>
+            </>
+          ) : (
+            <p className="muted">No hours in range.</p>
+          )}
+        </div>
+        <div className="mini-chart">
+          <h4>Top reasons by downtime hours</h4>
+          {rep.reasonContribution.length ? (
+            <ChartCanvas config={paretoConfig} height={240} downloadName="top-reasons" label="Top downtime reasons ranked by hours" />
           ) : (
             <p className="muted">No downtime in range.</p>
           )}
