@@ -113,18 +113,6 @@ export default function InsightsSection({ dash }) {
           ))}
         </ul>
       )}
-
-      <h4>Manager notes &amp; actions</h4>
-      <p className="muted">The data won't fill this in — record your team's suspected causes and the actions you decide on.</p>
-      <textarea
-        className="notes-area"
-        rows={4}
-        placeholder="e.g. Oct 8–9 breakdowns traced to line 3 motor; scheduled maintenance for…"
-        value={dash.managerNotes}
-        onChange={(e) => dash.setManagerNotes(e.target.value)}
-        aria-label="Manager notes and actions"
-      />
-      <p className="muted">Saved with the report when you click “Save report”.</p>
     </section>
   );
 }
