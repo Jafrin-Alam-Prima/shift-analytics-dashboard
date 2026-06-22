@@ -1,9 +1,14 @@
-// Anomaly report: each flagged row gets an explanation generated from THAT row's
-// own values (e.g. "HOURS=18 but start–end=4h"), grouped by severity tier, with
-// count tiles. Explanations are specific to the loaded data, not templated prose.
+// Read-only Data Integrity & Quality report: severity count tiles, the
+// data-quality severity bar, and a categorized list where each flagged row gets
+// an explanation generated from THAT row's own values (e.g. "HOURS=18 but
+// start–end=4h") plus how its issue type was handled. Explanations are specific to
+// the loaded data, not templated prose. The cleaning controls themselves live in
+// Settings → Data preparation; this view only reports the result.
 import { issueSeverity } from "../../lib/report.js";
 import { ISSUE_LABELS } from "../../lib/cleaning.js";
+import { CLEANING_OPTIONS } from "../../lib/config.js";
 import { shortDate, num } from "../../lib/format.js";
+import SeverityBar from "./SeverityBar.jsx";
 
 const TIERS = [
   { key: "critical", label: "Critical", cls: "sev-critical" },
@@ -11,6 +16,29 @@ const TIERS = [
   { key: "duplicate", label: "Duplicate", cls: "sev-duplicate" },
   { key: "info", label: "Info", cls: "sev-info" },
 ];
+
+// which cleaning control governs each issue type (mirrors the Data preparation
+// panel) — used to report, read-only, how each issue was handled.
+const ISSUE_TO_CONTROL = {
+  missingStart: "missingTime",
+  missingEnd: "missingTime",
+  badDate: "badDate",
+  negativeHours: "negativeHours",
+  hoursConflict: "hoursConflict",
+  crossMidnight: "crossMidnight",
+  duplicate: "duplicate",
+  reasonCase: "reasonCase",
+};
+
+// the human label of the strategy currently applied to an issue type (dynamic:
+// reflects whatever is chosen in Settings; null if the type has no control)
+function handledLabel(type, cleaning) {
+  const ctrlKey = ISSUE_TO_CONTROL[type];
+  const ctrl = CLEANING_OPTIONS[ctrlKey];
+  if (!ctrl) return null;
+  const chosen = ctrl.options.find((o) => o.value === cleaning[ctrlKey]);
+  return chosen ? chosen.label : null;
+}
 
 function hhmm(d) {
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
@@ -48,17 +76,23 @@ function explain(type, orig, rec) {
 }
 
 export default function AnomalySection({ dash }) {
-  const { view, logical } = dash;
+  const { view, logical, params } = dash;
   const sev = view.report.severity.dataQuality;
 
-  // one entry per (flagged row, issue), tagged with its tier
+  // one entry per (flagged row, issue), tagged with its tier + how it was handled
   const entries = [];
   for (const rec of view.rawRecords) {
     if (!rec.issues || rec.issues.length === 0) continue;
     const orig = logical[rec.i] || {};
     const label = `${rec.dateKey ? shortDate(rec.dateKey) : orig.date || "row " + (rec.i + 1)} · ${rec.reason || "(blank)"}`;
     for (const type of rec.issues) {
-      entries.push({ tier: issueSeverity(type), label, text: explain(type, orig, rec), row: rec.i + 1 });
+      entries.push({
+        tier: issueSeverity(type),
+        label,
+        text: explain(type, orig, rec),
+        row: rec.i + 1,
+        handled: handledLabel(type, params.cleaning),
+      });
     }
   }
 
@@ -75,6 +109,8 @@ export default function AnomalySection({ dash }) {
         ))}
       </div>
 
+      <SeverityBar severity={sev} />
+
       {entries.length === 0 ? (
         <p className="muted">No anomalies — the data is clean.</p>
       ) : (
@@ -90,6 +126,7 @@ export default function AnomalySection({ dash }) {
                 {rows.map((e, i) => (
                   <li key={i}>
                     <strong>{e.label}</strong> — {e.text} <span className="muted">(row {e.row})</span>
+                    {e.handled && <span className="muted"> · handled: {e.handled}</span>}
                   </li>
                 ))}
               </ul>

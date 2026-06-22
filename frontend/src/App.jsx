@@ -7,9 +7,6 @@ import { useDashboard } from "./state/useDashboard.js";
 import Sidebar from "./components/Sidebar.jsx";
 import TopBar from "./components/TopBar.jsx";
 import SettingsTab from "./components/SettingsTab.jsx";
-import DataQualityTab from "./components/DataQualityTab.jsx";
-import CorrectionsPanel from "./components/CorrectionsPanel.jsx";
-import SimilarityPanel from "./components/SimilarityPanel.jsx";
 import FilterBar from "./components/FilterBar.jsx";
 import ReportsView from "./components/ReportsView.jsx";
 import SourceStatus from "./components/SourceStatus.jsx";
@@ -36,18 +33,11 @@ const SECTION_FOR = {
 };
 
 // content for one analytical view: a shared filter bar + correction disclosure,
-// then the section. The Anomaly report instead shows the anomaly section plus the
-// cleaning / corrections / similarity tools that used to live on Data quality.
+// then the section. The Anomaly report is a read-only data-integrity report — just
+// the section, no filter bar (the cleaning/correction tools live in Settings).
 function AnalyticalView({ view, dash }) {
   if (view === "Anomaly report") {
-    return (
-      <>
-        <AnomalySection dash={dash} />
-        <DataQualityTab view={dash.view} params={dash.params} setCleaning={dash.setCleaning} />
-        <CorrectionsPanel dash={dash} />
-        <SimilarityPanel dash={dash} />
-      </>
-    );
+    return <AnomalySection dash={dash} />;
   }
 
   const Section = SECTION_FOR[view];
@@ -56,8 +46,8 @@ function AnalyticalView({ view, dash }) {
       <FilterBar dash={dash} />
       {dash.correctionCount > 0 && (
         <p className="custom-note">
-          {dash.correctionCount} manual correction{dash.correctionCount === 1 ? "" : "s"} applied (Anomaly
-          report → Manual corrections). These sit on top of the automatic cleaning.
+          {dash.correctionCount} manual correction{dash.correctionCount === 1 ? "" : "s"} applied (Settings
+          → Data preparation). These sit on top of the automatic cleaning.
         </p>
       )}
       <Section dash={dash} />
