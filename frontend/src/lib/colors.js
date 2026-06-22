@@ -9,6 +9,14 @@ const PALETTE = [
   "#ca8a04", "#be123c", "#1d4ed8", "#15803d",
 ];
 
+// Semantic (non-category) chart colours, kept here so charts share one source:
+// downtime is red, the worst point a deeper red, reference lines neutral.
+export const CHART_COLORS = {
+  downtime: "#dc2626",
+  downtimeWorst: "#7f1d1d",
+  reference: "#475569",
+};
+
 // reason -> colour, keyed off the full sorted reason list for stability
 export function reasonColorMap(allReasons) {
   const sorted = [...new Set(allReasons)].sort();

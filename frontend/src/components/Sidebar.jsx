@@ -2,13 +2,14 @@
 // Quality and Settings live in the header (trust chip + gear), not here, so the
 // nav stays focused on the business story. The current view is highlighted; on
 // mobile the sidebar becomes a drawer toggled from the header.
-import { IconDashboard, IconClock, IconStreak, IconGauge, IconInsight } from "./icons.jsx";
+import { IconDashboard, IconClock, IconStreak, IconGauge, IconTrends, IconInsight } from "./icons.jsx";
 
 const ICONS = {
   Overview: IconDashboard,
   "Shift analysis": IconClock,
   "Breakdown streaks": IconStreak,
   Efficiency: IconGauge,
+  Trends: IconTrends,
   Insights: IconInsight,
 };
 

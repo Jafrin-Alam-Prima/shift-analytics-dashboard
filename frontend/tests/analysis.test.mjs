@@ -2,7 +2,7 @@ import { check, readDataCsv } from "./harness.mjs";
 import { parseCsvText } from "../src/lib/csv.js";
 import { autoGuessMap, applyMap } from "../src/lib/columnMap.js";
 import { buildDataset } from "../src/lib/cleaning.js";
-import { efficiency, findStreaks, buildInsights, analyse, decisionCards } from "../src/lib/analysis.js";
+import { efficiency, findStreaks, buildInsights, analyse, decisionCards, downtimeByWeekday } from "../src/lib/analysis.js";
 import { reportMetrics } from "../src/lib/report.js";
 import { defaultParams } from "../src/lib/config.js";
 
@@ -104,6 +104,18 @@ export function run() {
   check("decisionCards: causal claims phrased as hypotheses (suggests/investigat…)",
     cards.some((c) => /suggests|investigat|worth a closer look|confirm/i.test(c.action)));
   check("decisionCards: empty data yields no cards (no crash)", decisionCards({}).length === 0);
+
+  // ---- day-of-week trend aggregation (display-side, changes no metric) ----
+  const wk = downtimeByWeekday(ds.clean, p.failureReasons);
+  check("downtimeByWeekday: 7 weekdays Mon–Sun",
+    wk.weekdays.length === 7 && wk.weekdays[0].weekday === "Mon" && wk.weekdays[6].weekday === "Sun");
+  check("downtimeByWeekday: overall average is positive", wk.overallAvg != null && wk.overallAvg > 0);
+  check("downtimeByWeekday: each weekday averages over its real occurrence count",
+    wk.weekdays.every((w) => w.avgDowntime == null || Math.abs(w.avgDowntime - w.totalDowntime / w.days) < 1e-9));
+  check("downtimeByWeekday: worst is the max-average weekday",
+    wk.worst && wk.weekdays.every((w) => w.avgDowntime == null || w.avgDowntime <= wk.worst.avgDowntime));
+  check("downtimeByWeekday: empty records -> no worst (no crash)",
+    downtimeByWeekday([], p.failureReasons).worst === null);
 
   // ---- selectable streak methods (S3.1) ----
   const consec = findStreaks(ds.clean, p.failureReasons, { method: "consecutive", minStreakDays: 2, maxGapDays: 0 });

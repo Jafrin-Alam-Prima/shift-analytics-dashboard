@@ -272,6 +272,46 @@ export function analyse(records, params) {
   return { efficiency: eff, streaks, insights };
 }
 
+// ---- day-of-week downtime pattern (display-side aggregation) ----------------
+// Average downtime hours per weekday (Mon–Sun) over the given records. Each
+// weekday's average is its total failure-reason downtime divided by how many
+// distinct dates of that weekday actually appear in the data (its real
+// occurrence count), so it adapts to any uploaded data + date range. Pure and
+// additive: changes no official metric and isn't part of the /analyze contract.
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function weekdayIndex(dateKey) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!m) return null;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return (d.getUTCDay() + 6) % 7; // 0 = Mon … 6 = Sun
+}
+
+export function downtimeByWeekday(records, failureReasons) {
+  const totals = WEEKDAYS.map(() => 0);
+  const dateSets = WEEKDAYS.map(() => new Set());
+  for (const r of records) {
+    if (!r.dateKey) continue;
+    const wd = weekdayIndex(r.dateKey);
+    if (wd == null) continue;
+    dateSets[wd].add(r.dateKey);
+    if (failureReasons.includes(r.reason)) totals[wd] += usable(r);
+  }
+  const weekdays = WEEKDAYS.map((label, i) => {
+    const days = dateSets[i].size;
+    const totalDowntime = totals[i];
+    return { weekday: label, index: i, days, totalDowntime, avgDowntime: days > 0 ? totalDowntime / days : null };
+  });
+  const totalDown = totals.reduce((a, b) => a + b, 0);
+  const totalDays = dateSets.reduce((a, s) => a + s.size, 0);
+  const overallAvg = totalDays > 0 ? totalDown / totalDays : null;
+  let worst = null;
+  for (const w of weekdays) {
+    if (w.avgDowntime != null && w.avgDowntime > 0 && (worst == null || w.avgDowntime > worst.avgDowntime)) worst = w;
+  }
+  return { weekdays, overallAvg, worst };
+}
+
 // ---- manager decision cards (rich insights for the Insights view) -----------
 // Builds up to five plant-manager "decision cards" from outputs that are already
 // computed elsewhere (report metrics, streaks, the official efficiency split,

@@ -107,6 +107,18 @@ export function IconInsight(props) {
   );
 }
 
+// Trends: a small bar chart (day-of-week pattern).
+export function IconTrends(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 3v18h18" />
+      <rect x="7" y="12" width="3" height="5" />
+      <rect x="12" y="8" width="3" height="9" />
+      <rect x="17" y="5" width="3" height="12" />
+    </svg>
+  );
+}
+
 // Export: a download tray.
 export function IconDownload(props) {
   return (
