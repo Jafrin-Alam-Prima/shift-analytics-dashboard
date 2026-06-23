@@ -60,12 +60,12 @@ function TrustChip({ dash, onOpen }) {
     <button
       className={`trust-chip ${tone} no-print`}
       onClick={onOpen}
-      title="Open Data Quality & Methodology"
-      aria-label={`${clean} of ${total} rows clean — open Data Quality & Methodology`}
+      title="Open the data quality check"
+      aria-label={`${clean} of ${total} records clean — open the data quality check`}
     >
       <IconQuality />
       <span>
-        {clean} of {total} rows clean
+        {clean} of {total} records clean
       </span>
     </button>
   );

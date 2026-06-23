@@ -50,7 +50,7 @@ export default function FilterBar({ dash }) {
       : `≤ ${filters.hoursMax} h`;
   const activeChips = [];
   if (filters.dateFrom || filters.dateTo) activeChips.push({ key: "date", label: dateLabel, clear: () => setDateRange("", "") });
-  if (filters.kind !== "all") activeChips.push({ key: "kind", label: filters.kind === "downtime" ? "Downtime only" : "Productive only", clear: () => setFilter("kind", "all") });
+  if (filters.kind !== "all") activeChips.push({ key: "kind", label: filters.kind === "downtime" ? "Failures only" : "Working only", clear: () => setFilter("kind", "all") });
   if (filters.hoursMin !== "" || filters.hoursMax !== "") activeChips.push({ key: "hours", label: hoursLabel, clear: () => { setFilter("hoursMin", ""); setFilter("hoursMax", ""); } });
   for (const r of filters.reasons) activeChips.push({ key: `reason-${r}`, label: r, clear: () => setFilter("reasons", filters.reasons.filter((x) => x !== r)) });
   for (const g of filters.groups) activeChips.push({ key: `group-${g}`, label: g, clear: () => setFilter("groups", filters.groups.filter((x) => x !== g)) });
@@ -106,8 +106,8 @@ export default function FilterBar({ dash }) {
               ariaLabel="Show"
               options={[
                 { value: "all", label: "All" },
-                { value: "productive", label: "Productive" },
-                { value: "downtime", label: "Downtime" },
+                { value: "productive", label: "Working" },
+                { value: "downtime", label: "Failures" },
               ]}
             />
           </div>
