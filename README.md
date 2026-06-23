@@ -1,5 +1,7 @@
 # Shift Analytics Dashboard
 
+**Live demo: [shift-analytics-dashboard.vercel.app](https://shift-analytics-dashboard.vercel.app)**
+
 A web app that turns messy factory shift-log data into a clean operational story. It detects and
 handles data-quality issues, scores operational efficiency, finds recurring breakdown streaks, draws
 shift and time-based visualizations, and surfaces plain-language insights a plant manager can act on.
