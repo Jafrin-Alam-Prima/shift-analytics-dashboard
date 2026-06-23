@@ -247,9 +247,10 @@ export function useDashboard() {
     setFilters(defaultFilters());
   }
 
-  // the Filters panel is expanded by default so the controls are discoverable on
-  // load; the toggle persists across view switches.
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  // the Filters panel is collapsed by default so the dashboard leads with
+  // information; the prominent toggle + active-filter chips keep it discoverable.
+  // The open state persists across view switches.
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // dataset helpers: upload a CSV (text) or reset to the bundled sample
   function loadCsvText(text, name) {

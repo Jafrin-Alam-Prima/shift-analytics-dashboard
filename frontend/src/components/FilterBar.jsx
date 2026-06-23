@@ -1,8 +1,9 @@
-// Prominent, expanded-by-default Filters panel so the controls are discoverable
-// on load. A filter-icon + "Filters" label + accent active-count badge toggles
-// it; applied filters also appear as inline chips (each with a quick clear ×)
-// next to a Reset. Sub-sections: Show (kind), Date, Hours, Reasons, Groups — all
-// combinable. (Clean/raw and the data source live in Settings → Data.)
+// Prominent but collapsed-by-default Filters panel. A filter-icon + "Filters"
+// label + accent active-count badge make it discoverable and toggle it open;
+// applied filters appear as inline chips (each with a quick clear ×) next to a
+// Reset, so what's active stays visible even when collapsed. Sub-sections: Show
+// (kind), Date, Hours, Reasons, Groups — all combinable. (Clean/raw and the data
+// source live in Settings → Data.)
 import Segmented from "./Segmented.jsx";
 import { IconFilter } from "./icons.jsx";
 import { filtersActive, datePresetRange } from "../lib/filters.js";
