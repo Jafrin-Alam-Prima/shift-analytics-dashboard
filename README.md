@@ -8,7 +8,7 @@ It runs two ways:
 
 - **Local mode (default)** — all analysis runs in the browser. No server needed. This is the
   canonical result.
-- **Backend mode (optional)** — a Django + pandas API recomputes the same numbers with the same
+- **Backend mode** — a Django + pandas API recomputes the same numbers with the same
   rules, so both modes always agree. A built-in parity check proves it.
 
 ---
@@ -31,37 +31,19 @@ manual steps below.
 
 ## Features
 
-From a raw, messy CSV to a decision-ready operations dashboard — cleaned, analyzed, and explained,
-with every number reproducible.
+* **Six analytical views:** Overview, Shift Analysis, Breakdown Streaks, Efficiency, Trends, and Insights.
+* **Data quality engine:** Detects and handles operational inconsistencies including invalid dates, impossible or negative hours, timestamp mismatches, missing values, duplicates, cross-midnight shifts, and inconsistent activity labels. All rules and handling decisions are documented transparently.
+* **Flexible filtering:** Analyze data using any combination of date range, activity reason, group, shift hours, and activity type.
+* **Shift analysis visualization:** Interactive timeline view showing operational activity patterns over time.
+* **Additional visualizations:** Downtime calendar, day-of-week patterns, week-over-week comparisons, Pareto analysis of downtime drivers, trend analysis, and data-quality monitoring.
+* **Breakdown streak detection:** Identifies recurring breakdown periods using a documented methodology and clearly stated assumptions.
+* **Operational Efficiency Score:** Calculates `(Productive Hours ÷ Total Hours) × 100`, where Productive Hours exclude Breakdown and Unknown Failure activities.
+* **Actionable operational insights:** Generates at least three data-driven insights with supporting evidence and recommended actions for plant managers.
+* **Dynamic category handling:** New activity categories automatically flow into filters, calculations, charts, and reports without code changes.
+* **Dual-engine validation:** Browser-based analytics with a Django + pandas backend that mirrors the same logic and supports parity verification.
+* **Export & reporting:** Export cleaned datasets, Markdown reports, chart images, and print-ready summaries.
+* **Modern user experience:** Responsive layout, dark mode, and a consistent design system optimized for operational analytics.
 
-**A complete analytics workspace.** Six purpose-built views — Overview, Shift analysis, Breakdown
-streaks, Efficiency, Trends, and Insights — each answering a specific operational question, with
-filtering across date, reason, group, hours, and type in any combination.
-
-**A real data-cleaning engine, not a black box.** Automatically detects eight classes of operational
-inconsistency — impossible and negative hours, invalid dates, hours-vs-timestamp mismatches,
-cross-midnight shifts, missing timestamps, exact duplicates, and inconsistent category labels —
-documents every rule on a dedicated Methodology page, and handles each one transparently, with
-auditable, reversible per-row corrections and suggestion-only fuzzy matching for typo'd categories.
-Raw in, clean out, fully explained.
-
-**Operations analysis that means something.** A documented breakdown-streak detector that surfaces
-recurring failure clusters; an Operational Efficiency Score — (Productive ÷ Total) × 100; and at least
-three data-derived insights written as plant-manager decision cards (finding → evidence → a concrete,
-measurable action).
-
-**Visualizations that tell the story.** A floating shift timeline, a month-style downtime calendar,
-day-of-week patterns, week-over-week comparisons, a Pareto of top downtime drivers, and
-severity-graded data-quality bars — all themed for light and dark mode.
-
-**Built to last — and to scale.** Fully dynamic: a brand-new activity category flows into every chart,
-legend, and calculation with zero code changes. Dual-engine by design — everything computes in the
-browser (the canonical result), while an optional Django + pandas backend mirrors the exact logic, and
-a parity check proves the two engines agree to the decimal. Backed by ~131 automated tests.
-
-**Polished, professional UI.** A token-driven design system (Inter typography, consistent
-type / color / spacing scales), responsive layout, dark mode, and one-click export to cleaned CSV,
-Markdown report, chart PNGs, or print.
 
 ---
 
@@ -69,7 +51,7 @@ Markdown report, chart PNGs, or print.
 
 - **Frontend:** React + Vite (JavaScript), Chart.js, PapaParse (CSV parsing), Inter font (bundled via
   `@fontsource`).
-- **Backend (optional):** Django + Django REST Framework + pandas, SQLite.
+- **Backend:** Django + Django REST Framework + pandas, SQLite.
 - **Quality:** ~131 unit tests (Node test runner) plus a local-vs-backend parity script.
 
 ---
@@ -78,7 +60,7 @@ Markdown report, chart PNGs, or print.
 
 - Node.js 18+ (tested on Node 22)
 - npm 9+
-- Python 3.11–3.13 (only needed for the optional backend mode)
+- Python 3.11–3.13 (only needed for the backend mode)
 
 ---
 
