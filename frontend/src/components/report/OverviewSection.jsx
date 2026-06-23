@@ -23,11 +23,17 @@ function median(arr) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-function Tile({ label, value, note, tone }) {
+// plain-language hours: "143.5 hrs" (not the compact "143.5 h" used on charts)
+const hoursVal = (n) => (n == null || isNaN(n) ? "—" : `${num(n)} hrs`);
+
+function Tile({ label, value, note, tone, tip }) {
   return (
     <div className={`kpi tile-${tone || "neutral"}`}>
       <div className="kpi-value">{value}</div>
-      <div className="kpi-label">{label}</div>
+      <div className="kpi-label">
+        {label}
+        {tip && <InfoTip text={tip} label={`About: ${label}`} />}
+      </div>
       {note && <div className="tile-note">{note}</div>}
     </div>
   );
@@ -208,15 +214,42 @@ export default function OverviewSection({ dash }) {
 
       <div className="kpi-row">
         <Tile
-          label="Official efficiency"
+          label="Efficiency"
           value={pct(officialScore)}
-          note={`Target ${num(rep.target, 0)}% · ${officialGap == null ? "—" : (officialGap >= 0 ? "+" : "") + num(officialGap)} pts${view.failureCustomized ? ` · custom ${pct(view.efficiency.score)}` : ""}`}
+          note={officialGap == null ? `Goal ${num(rep.target, 0)}%` : `${officialGap >= 0 ? "Above" : "Below"} the ${num(rep.target, 0)}% goal`}
           tone={effTone}
+          tip={`Official Operational Efficiency = productive hours ÷ total hours × 100 = ${pct(officialScore)}${
+            officialGap == null
+              ? ""
+              : ` — ${officialGap >= 0 ? `${num(officialGap)} points above` : `${num(-officialGap)} points below`} the ${num(rep.target, 0)}% target`
+          }.${view.failureCustomized ? ` (With your custom failure set it would be ${pct(view.efficiency.score)}; the headline stays on the official set.)` : ""}`}
         />
-        <Tile label="Total hours" value={hrs(totalHours)} note={`${records.length} shifts`} />
-        <Tile label="Downtime" value={hrs(rep.downtimeTotal)} note={`${pct(downtimePctOfTotal)} of hours`} tone={downtimePctOfTotal > 25 ? "warn" : "neutral"} />
-        <Tile label="Avg shift" value={hrs(avg)} note={`median ${hrs(med)}`} />
-        <Tile label="Flagged rows" value={num(view.flaggedCount, 0)} note={`error ${pct(view.errorRate)}`} tone={flagTone} />
+        <Tile
+          label="Total time tracked"
+          value={hoursVal(totalHours)}
+          note={`${records.length} shifts`}
+          tip={`The sum of all usable shift hours in the selected range, across ${records.length} shifts — ${hoursVal(totalHours)}.`}
+        />
+        <Tile
+          label="Time lost to failures"
+          value={hoursVal(rep.downtimeTotal)}
+          note={`${pct(downtimePctOfTotal)} of all time`}
+          tone={downtimePctOfTotal > 25 ? "warn" : "neutral"}
+          tip={`Hours in the failure categories (${params.failureReasons.join(", ")}) — ${hoursVal(rep.downtimeTotal)}, ${pct(downtimePctOfTotal)} of the ${hoursVal(totalHours)} tracked.`}
+        />
+        <Tile
+          label="Average shift length"
+          value={hoursVal(avg)}
+          note="per shift"
+          tip={`Mean shift length is ${hoursVal(avg)}; the median (middle) shift is ${hoursVal(med)}.`}
+        />
+        <Tile
+          label="Data issues found"
+          value={num(view.flaggedCount, 0)}
+          note={`of ${view.total} rows`}
+          tone={flagTone}
+          tip={`${num(view.flaggedCount, 0)} of ${view.total} rows had a data issue (${pct(view.errorRate)}) — each was detected and handled automatically. See Data Quality for the breakdown.`}
+        />
       </div>
 
       <h4>

@@ -323,15 +323,17 @@ export function downtimeByWeekday(records, failureReasons) {
   return { weekdays, overallAvg, worst };
 }
 
-// per-date failure-hours + incident count (display-side; powers the streak
-// calendar). Pure and additive — no official metric, not in the /analyze contract.
+// per-date failure-hours, incident count, and the incident list (reason + hours
+// each) that powers the streak calendar's hover + click-through detail. Pure and
+// additive — no official metric, not in the /analyze contract.
 export function downtimeByDate(records, failureReasons) {
   const map = {};
   for (const r of records) {
     if (!r.dateKey || !failureReasons.includes(r.reason)) continue;
-    if (!map[r.dateKey]) map[r.dateKey] = { hours: 0, count: 0 };
+    if (!map[r.dateKey]) map[r.dateKey] = { hours: 0, count: 0, incidents: [] };
     map[r.dateKey].hours += usable(r);
     map[r.dateKey].count += 1;
+    map[r.dateKey].incidents.push({ reason: r.reason, hours: usable(r) });
   }
   return map;
 }
