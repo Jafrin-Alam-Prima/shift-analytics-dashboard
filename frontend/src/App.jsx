@@ -36,7 +36,8 @@ const SECTION_FOR = {
 };
 
 // one analytical view: a shared filter bar + correction disclosure, then the
-// section. Shift analysis leads with the floating timeline (cleaned data).
+// section. Shift analysis shows the shift breakdown charts first, then the
+// floating timeline below.
 function AnalyticalView({ view, dash }) {
   const Section = SECTION_FOR[view];
   return (
@@ -48,10 +49,10 @@ function AnalyticalView({ view, dash }) {
           → Data preparation). These sit on top of the automatic cleaning.
         </p>
       )}
+      <Section dash={dash} />
       {view === "Shift analysis" && (
         <TimelineChart records={dash.view.filtered} allRecords={dash.view.cleanRecords} groups={dash.view.groups} />
       )}
-      <Section dash={dash} />
     </>
   );
 }
