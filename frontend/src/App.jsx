@@ -41,12 +41,6 @@ function AnalyticalView({ view, dash }) {
   return (
     <>
       <FilterBar dash={dash} />
-      {dash.correctionCount > 0 && (
-        <p className="custom-note">
-          {dash.correctionCount} manual correction{dash.correctionCount === 1 ? "" : "s"} applied (Settings
-          → Data preparation). These sit on top of the automatic cleaning.
-        </p>
-      )}
       <Section dash={dash} />
       {view === "Shift analysis" && (
         <TimelineChart records={dash.view.filtered} allRecords={dash.view.cleanRecords} groups={dash.view.groups} />
@@ -186,7 +180,7 @@ export default function App() {
       </div>
 
       {overlay === "settings" && (
-        <Modal title="Settings" subtitle="Data source, column mapping, data preparation, and analysis configuration" onClose={() => setOverlay(null)}>
+        <Modal title="Settings" subtitle="Upload data, choose the source, and map the columns" onClose={() => setOverlay(null)}>
           <SettingsTab dash={dash} />
         </Modal>
       )}

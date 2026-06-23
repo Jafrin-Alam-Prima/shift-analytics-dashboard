@@ -8,7 +8,6 @@ import { LOGICAL_FIELDS, defaultParams, defaultReportConfig, DEFAULT_FAILURE_REA
 import { buildDataset } from "../lib/cleaning.js";
 import { analyse, efficiency } from "../lib/analysis.js";
 import { reportMetrics } from "../lib/report.js";
-import { defaultOverrides, applyOverrides, overrideCount, overrideAudit } from "../lib/overrides.js";
 import { defaultFilters, applyFilters } from "../lib/filters.js";
 import { pingHealth, fetchAnalyze, hydrateRecords } from "../lib/backend.js";
 
@@ -21,7 +20,6 @@ export function useDashboard() {
   const [params, setParams] = useState(defaultParams);
   const [mode, setMode] = useState("clean"); // clean | raw
   const [filters, setFilters] = useState(defaultFilters);
-  const [overrides, setOverrides] = useState(defaultOverrides); // manual per-row corrections
   const [dataSource, setDataSource] = useState("auto"); // auto | local | backend
   const [backendStatus, setBackendStatus] = useState("unknown"); // unknown | checking | online | offline
   const [backendResult, setBackendResult] = useState(null);
@@ -68,15 +66,13 @@ export function useDashboard() {
     [rows, map, missing.length]
   );
 
-  // apply manual corrections on top of the parsed rows (none by default), then
-  // run the canonical cleaning engine on the result
-  const effectiveLogical = useMemo(() => applyOverrides(logical, overrides), [logical, overrides]);
+  // tag each logical row with its original index so cleaning keeps stable row
+  // numbers, then run the canonical cleaning engine on the result
+  const effectiveLogical = useMemo(() => logical.map((row, i) => ({ ...row, __id: i })), [logical]);
   const dataset = useMemo(
     () => (effectiveLogical.length ? buildDataset(effectiveLogical, params) : null),
     [effectiveLogical, params]
   );
-  const correctionCount = overrideCount(overrides);
-  const corrections = useMemo(() => overrideAudit(logical, overrides), [logical, overrides]);
 
   // the record set the views use: cleaned (default) or raw
   const activeRecords = useMemo(() => {
@@ -149,9 +145,9 @@ export function useDashboard() {
     let alive = true;
     (async () => {
       try {
-        // send our current rows + manual overrides so the backend analyses the
-        // same data the same way (parity, incl. uploads + corrections)
-        const data = await fetchAnalyze({ params, mode, filters, rows: logical, overrides });
+        // send our current rows so the backend analyses the same data the same
+        // way (parity, incl. uploads); no manual corrections any more
+        const data = await fetchAnalyze({ params, mode, filters, rows: logical, overrides: {} });
         if (alive) setBackendResult(data);
       } catch {
         if (alive) {
@@ -163,7 +159,7 @@ export function useDashboard() {
     return () => {
       alive = false;
     };
-  }, [usingBackend, ready, params, mode, filters, logical, overrides]);
+  }, [usingBackend, ready, params, mode, filters, logical]);
 
   // which source is actually driving the views right now
   const effectiveSource = usingBackend && backendResult ? "backend" : "local";
@@ -223,11 +219,6 @@ export function useDashboard() {
     [view]
   );
 
-  // helper for changing one cleaning strategy
-  function setCleaning(issueKey, value) {
-    setParams((p) => ({ ...p, cleaning: { ...p.cleaning, [issueKey]: value } }));
-  }
-
   // the full (unfiltered) cleaned date span — anchors the Filters date presets to
   // the dataset's own dates rather than the system clock (the data is historical).
   const datasetDates = useMemo(() => {
@@ -262,7 +253,6 @@ export function useDashboard() {
       setIsSample(false);
       setUploadError("");
       setFilters(defaultFilters());
-      setOverrides({});
       return { ok: true };
     } catch (e) {
       setUploadError(e.message || "Could not read that CSV.");
@@ -277,7 +267,6 @@ export function useDashboard() {
       setIsSample(true);
       setUploadError("");
       setFilters(defaultFilters());
-      setOverrides({});
     } catch (e) {
       setUploadError(e.message || "Could not reload the sample.");
     }
@@ -354,44 +343,6 @@ export function useDashboard() {
     setParams((p) => ({ ...p, report: defaultReportConfig() }));
   }
 
-  // manual correction helpers (auditable, reversible)
-  function setFieldOverride(rowIndex, field, value) {
-    setOverrides((o) => {
-      const next = { ...o };
-      const entry = { ...(next[rowIndex] || {}) };
-      const fields = { ...(entry.fields || {}) };
-      const original = (logical[rowIndex] && logical[rowIndex][field]) || "";
-      if (value === original) delete fields[field]; // a no-op edit is not a correction
-      else fields[field] = value;
-      if (Object.keys(fields).length) entry.fields = fields;
-      else delete entry.fields;
-      if (Object.keys(entry).length) next[rowIndex] = entry;
-      else delete next[rowIndex];
-      return next;
-    });
-  }
-  function toggleExclude(rowIndex) {
-    setOverrides((o) => {
-      const next = { ...o };
-      const entry = { ...(next[rowIndex] || {}) };
-      if (entry.excluded) delete entry.excluded;
-      else entry.excluded = true;
-      if (Object.keys(entry).length) next[rowIndex] = entry;
-      else delete next[rowIndex];
-      return next;
-    });
-  }
-  function revertRow(rowIndex) {
-    setOverrides((o) => {
-      const next = { ...o };
-      delete next[rowIndex];
-      return next;
-    });
-  }
-  function revertAllOverrides() {
-    setOverrides({});
-  }
-
   return {
     loadStatus,
     error,
@@ -403,7 +354,6 @@ export function useDashboard() {
     logical,
     params,
     setParams,
-    setCleaning,
     dataset,
     mode,
     setMode,
@@ -446,13 +396,5 @@ export function useDashboard() {
     applyReport,
     managerNotes,
     setManagerNotes,
-    // manual corrections (X4)
-    overrides,
-    corrections,
-    correctionCount,
-    setFieldOverride,
-    toggleExclude,
-    revertRow,
-    revertAllOverrides,
   };
 }

@@ -64,8 +64,8 @@ export default function DataQualityPage({ dash }) {
       <section className="card report-section">
         <h2>How issues are detected &amp; handled</h2>
         <p className="muted">
-          Every issue type the cleaning engine checks for — how it’s spotted and its default disposition.
-          Handling strategies are configurable in <strong>Settings → Data preparation</strong>.
+          Every issue type the cleaning engine checks for — how it’s spotted and how it’s handled. These
+          handling strategies run automatically on any uploaded data.
         </p>
         <table className="issue-table">
           <thead>

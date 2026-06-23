@@ -24,7 +24,7 @@ export default function ExportMenu({ dash }) {
     setOpen(false);
   }
   function exportReport() {
-    const md = buildReportMarkdown(dash.view, dash.mode, dash.datasetName, dash.managerNotes, dash.corrections);
+    const md = buildReportMarkdown(dash.view, dash.mode, dash.datasetName, dash.managerNotes);
     downloadText(`report-${dash.datasetName.replace(/\.csv$/i, "")}.md`, md, "text/markdown");
     setOpen(false);
   }

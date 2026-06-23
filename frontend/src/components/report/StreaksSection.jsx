@@ -67,7 +67,7 @@ export default function StreaksSection({ dash }) {
             Severity by total breakdown hours: <strong>low</strong> below {hrs(bands.medium)}, <strong>medium</strong>{" "}
             {hrs(bands.medium)}–{hrs(bands.high)}, <strong>high</strong> at {hrs(bands.high)} and above.
           </li>
-          <li className="muted">Read from Settings → Analysis settings — change a value and streaks recompute.</li>
+          <li className="muted">Applied automatically from the documented analysis defaults.</li>
         </ul>
       </div>
 
