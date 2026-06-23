@@ -228,9 +228,20 @@ export function useDashboard() {
     setParams((p) => ({ ...p, cleaning: { ...p.cleaning, [issueKey]: value } }));
   }
 
+  // the full (unfiltered) cleaned date span — anchors the Filters date presets to
+  // the dataset's own dates rather than the system clock (the data is historical).
+  const datasetDates = useMemo(() => {
+    if (!dataset) return { min: null, max: null };
+    const keys = dataset.clean.map((r) => r.dateKey).filter(Boolean).sort();
+    return { min: keys[0] || null, max: keys.length ? keys[keys.length - 1] : null };
+  }, [dataset]);
+
   // filter helpers
   function setFilter(key, value) {
     setFilters((f) => ({ ...f, [key]: value }));
+  }
+  function setDateRange(from, to) {
+    setFilters((f) => ({ ...f, dateFrom: from, dateTo: to }));
   }
   function resetFilters() {
     setFilters(defaultFilters());
@@ -395,7 +406,9 @@ export function useDashboard() {
     filters,
     setFilter,
     setFilters,
+    setDateRange,
     resetFilters,
+    datasetDates,
     filteredRecords,
     analysis,
     officialEfficiency,

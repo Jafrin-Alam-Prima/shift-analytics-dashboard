@@ -4,15 +4,25 @@
 // data source live in Settings → Data; they're data choices, not filters.)
 import { useState } from "react";
 import Segmented from "./Segmented.jsx";
-import { filtersActive } from "../lib/filters.js";
+import { filtersActive, datePresetRange } from "../lib/filters.js";
 import { uniqueReasons } from "../lib/cleaning.js";
 
 export default function FilterBar({ dash }) {
-  const { dataset, filters, setFilter, resetFilters, params } = dash;
+  const { dataset, filters, setFilter, setDateRange, resetFilters, params, datasetDates } = dash;
   const reasons = uniqueReasons(dataset.raw);
   const groupNames = Object.keys(params.groups);
   const [open, setOpen] = useState(false);
   const active = filtersActive(filters);
+
+  // quick date presets, anchored to the dataset's latest date (not the clock)
+  const maxDate = datasetDates && datasetDates.max;
+  const r7 = datePresetRange(maxDate, 7);
+  const r14 = datePresetRange(maxDate, 14);
+  const datePresets = [
+    { label: "Full range", on: !filters.dateFrom && !filters.dateTo, apply: () => setDateRange("", "") },
+    { label: "Last 7 days", on: filters.dateFrom === r7.dateFrom && filters.dateTo === r7.dateTo, apply: () => setDateRange(r7.dateFrom, r7.dateTo) },
+    { label: "Last 14 days", on: filters.dateFrom === r14.dateFrom && filters.dateTo === r14.dateTo, apply: () => setDateRange(r14.dateFrom, r14.dateTo) },
+  ];
 
   // count how many distinct filters are set, for the collapsed summary
   const activeCount =
@@ -62,6 +72,18 @@ export default function FilterBar({ dash }) {
 
           <div className="filter-group">
             <span className="seg-label">Date</span>
+            <div className="chip-wrap">
+              {datePresets.map((p) => (
+                <button
+                  key={p.label}
+                  className={p.on ? "chip active" : "chip"}
+                  onClick={p.apply}
+                  aria-pressed={p.on}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
             <label className="filter-field">
               <span className="seg-label">From</span>
               <input type="date" value={filters.dateFrom} onChange={(e) => setFilter("dateFrom", e.target.value)} />
