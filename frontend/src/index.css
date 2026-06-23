@@ -2,7 +2,7 @@
   color-scheme: light;
 
   /* ---- type ---- */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --fs-display: 1.9rem; /* KPI / gauge numbers */
   --fs-title: 1.2rem; /* section titles (h2) */
   --fs-card: 0.95rem; /* card titles (h3/h4) */
@@ -14,6 +14,7 @@
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
+  --fw-black: 900; /* heavy display weight (Lato Black) for stat figures */
 
   /* ---- brand (Renata-style corporate blue) ---- */
   --brand-navy: #0e3f7e; /* header bar, sidebar, headings, KPI figures, logo */
@@ -135,12 +136,12 @@ h4 {
 }
 h2 {
   font-size: var(--fs-title);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
 }
 h3,
 h4 {
   font-size: var(--fs-card);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
 }
 
 /* ---- app shell: sidebar + main ---- */
@@ -640,7 +641,7 @@ input:focus-visible {
 }
 .kpi-value {
   font-size: var(--fs-display);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-black);
   line-height: var(--lh-tight);
   letter-spacing: -0.01em;
   color: var(--heading);
@@ -675,7 +676,7 @@ input:focus-visible {
 }
 .kpi-pair-num {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: var(--fw-black);
 }
 .kpi-pair-num.custom {
   color: var(--accent);
@@ -1211,7 +1212,7 @@ input:focus-visible {
 }
 .gauge-num {
   font-size: 2.6rem;
-  font-weight: 800;
+  font-weight: var(--fw-black);
   min-width: 130px;
   color: var(--heading);
 }

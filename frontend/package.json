@@ -10,7 +10,7 @@
     "test": "node tests/run-tests.mjs"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
+    "@fontsource/lato": "^5.2.7",
     "chart.js": "4.4.6",
     "papaparse": "5.4.1",
     "react": "18.3.1",
