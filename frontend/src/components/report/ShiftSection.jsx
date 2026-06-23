@@ -7,7 +7,7 @@ import { reasonColorMap } from "../../lib/colors.js";
 import { uniqueReasons } from "../../lib/cleaning.js";
 import { hrs, num } from "../../lib/format.js";
 
-const SLOT_COLORS = ["#f59e0b", "#2563eb", "#7c3aed", "#0891b2", "#db2777", "#65a30d"];
+const SLOT_COLORS = ["#f59e0b", "#2480c9", "#7c3aed", "#0891b2", "#db2777", "#65a30d"];
 
 export default function ShiftSection({ dash }) {
   const slots = dash.view.report.shiftSlots;

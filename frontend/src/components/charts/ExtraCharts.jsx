@@ -71,8 +71,8 @@ export default function ExtraCharts({ records, allRecords, groups, failureReason
           {
             label: "Efficiency %",
             data: byDay.map((d) => (d.score == null ? null : round1(d.score))),
-            borderColor: "#2563eb",
-            backgroundColor: "rgba(37,99,235,0.15)",
+            borderColor: "#2480c9",
+            backgroundColor: "rgba(36,128,201,0.15)",
             tension: 0.3,
             spanGaps: true,
             fill: true,

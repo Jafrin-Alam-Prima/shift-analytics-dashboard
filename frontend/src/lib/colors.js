@@ -3,22 +3,24 @@
 // data is filtered down. New/unknown reasons just take the next palette slot.
 import { DEFAULT_GROUPS } from "./config.js";
 
-// Cohesive categorical palette — distinguishable and readable in light + dark.
-// The first 12 are maximally distinct; the rest extend it. New/unknown reasons
-// just take the next slot (dynamic fallback preserved).
+// Cohesive categorical palette — leads with the brand blues/teals to harmonize
+// with the corporate-blue UI, then fans out to distinct hues that read cleanly on
+// white. The first 12 are maximally distinct; the rest extend it. New/unknown
+// reasons just take the next slot (dynamic fallback preserved).
 const PALETTE = [
-  "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#06b6d4",
-  "#ec4899", "#84cc16", "#f97316", "#14b8a6", "#6366f1", "#64748b",
-  "#eab308", "#f43f5e", "#0ea5e9", "#a855f7",
+  "#2480c9", "#14b8a6", "#7c3aed", "#e8794b", "#db2777", "#65a30d",
+  "#0ea5e9", "#f59e0b", "#6366f1", "#0e7490", "#be123c", "#475569",
+  "#84cc16", "#a855f7", "#0891b2", "#eab308",
 ];
 
 // Semantic (non-category) chart colours, kept here so charts share one source:
-// downtime is red, the worst point a deeper red, reference lines neutral grey
-// (mid-tone so it reads on both light and dark).
+// downtime is red, the worst point a deeper red, reference lines a neutral
+// blue-grey (mid-tone so it reads on both light and dark).
 export const CHART_COLORS = {
   downtime: "#dc2626",
   downtimeWorst: "#7f1d1d",
-  reference: "#94a3b8",
+  reference: "#7c93ad",
+  brand: "#2480c9",
 };
 
 // Chart.js styling resolved from the live CSS tokens, so every chart matches the
