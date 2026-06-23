@@ -32,7 +32,7 @@ export default function EfficiencySection({ dash }) {
     () => ({
       type: "doughnut",
       data: {
-        labels: ["Productive", "Non-productive"],
+        labels: ["Working time", "Lost time"],
         datasets: [{ data: [Number(off.productive.toFixed(2)), Number(nonProductive.toFixed(2))], backgroundColor: ["#16a34a", "#dc2626"] }],
       },
       options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
@@ -56,7 +56,7 @@ export default function EfficiencySection({ dash }) {
             fill: true,
           },
           {
-            label: `Target ${num(target, 0)}%`,
+            label: `Goal ${num(target, 0)}%`,
             data: rep.byWeek.map(() => target),
             borderColor: "#16a34a",
             borderDash: [6, 4],
@@ -80,14 +80,14 @@ export default function EfficiencySection({ dash }) {
       type: "bar",
       data: {
         labels: rep.reasonContribution.map((c) => c.reason),
-        datasets: [{ label: "Downtime h", data: rep.reasonContribution.map((c) => Number(c.hours.toFixed(2))), backgroundColor: rep.reasonContribution.map((c) => reasonColors[c.reason] || "#94a3b8") }],
+        datasets: [{ label: "Hours lost", data: rep.reasonContribution.map((c) => Number(c.hours.toFixed(2))), backgroundColor: rep.reasonContribution.map((c) => reasonColors[c.reason] || "#94a3b8") }],
       },
       options: {
         maintainAspectRatio: false,
         animation: false,
         indexAxis: "y",
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, title: { display: true, text: "Downtime (hours)" } } },
+        scales: { x: { beginAtZero: true, title: { display: true, text: "Hours lost" } } },
       },
     }),
     [rep.reasonContribution, reasonColors]
@@ -98,9 +98,10 @@ export default function EfficiencySection({ dash }) {
   return (
     <section className="card report-section">
       <h2>Efficiency</h2>
+      <p className="section-subtitle">How much of the tracked time was working time, not lost to failures.</p>
 
       <div className="formula-box">
-        <span className="formula-line">Efficiency = Productive ÷ Total hours × 100</span>{" "}
+        <span className="formula-line">Working time as a share of all tracked time.</span>{" "}
         <InfoTip text={effTip} label="How efficiency is calculated, with the worked numbers" />
       </div>
 
@@ -109,47 +110,46 @@ export default function EfficiencySection({ dash }) {
         <div className="gauge-side">
           <div className="gauge-track">
             <div className="gauge-fill" style={{ width: `${fillPct}%` }} />
-            <div className="gauge-target" style={{ left: `${Math.min(100, target)}%` }} title={`Target ${num(target, 0)}%`} />
+            <div className="gauge-target" style={{ left: `${Math.min(100, target)}%` }} title={`Goal ${num(target, 0)}%`} />
           </div>
           <div className="gauge-labels">
             <span>0%</span>
-            <span>Target {num(target, 0)}%</span>
+            <span>Goal {num(target, 0)}%</span>
             <span>100%</span>
           </div>
           <div className={gap == null ? "muted" : gap >= 0 ? "good-text" : "bad-text"}>
-            {gap == null ? "No data" : `${gap >= 0 ? "+" : ""}${num(gap)} pts vs target`}
+            {gap == null ? "No data" : `${num(Math.abs(gap))} ${gap >= 0 ? "over" : "under"} the ${num(target, 0)}% goal`}
           </div>
           {view.failureCustomized && (
-            <div className="muted">Official (pinned). Custom failure set: {pct(view.efficiency.score)}.</div>
+            <div className="muted">Headline uses the standard failure set. With your custom set it's {pct(view.efficiency.score)}.</div>
           )}
         </div>
       </div>
 
       <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
-          <h4>Productive vs downtime</h4>
-          <ChartCanvas config={donutConfig} height={240} downloadName="productive-vs-downtime" label="Productive versus downtime hours" />
+          <h4>Working time vs lost time</h4>
+          <ChartCanvas config={donutConfig} height={240} downloadName="working-vs-lost-time" label="Working time versus time lost to failures" />
         </div>
         <div className="mini-chart">
-          <h4>Efficiency by week</h4>
+          <h4>Efficiency, week by week</h4>
           {rep.byWeek.length ? (
-            <ChartCanvas config={weekConfig} height={240} downloadName="efficiency-by-week" label="Efficiency by week with target line" />
+            <ChartCanvas config={weekConfig} height={240} downloadName="efficiency-week-by-week" label="Efficiency for each week with the goal line" />
           ) : (
             <p className="muted">No weeks in range.</p>
           )}
         </div>
         <div className="mini-chart">
-          <h4>Failure downtime by category ({failureLabel})</h4>
+          <h4>Time lost to failures ({failureLabel})</h4>
           {rep.reasonContribution.length ? (
             <>
-              <ChartCanvas config={contribConfig} height={240} downloadName="failure-downtime-by-category" label={`Failure downtime by category (${failureLabel})`} />
+              <ChartCanvas config={contribConfig} height={240} downloadName="time-lost-by-category" label={`Time lost to failures, by category (${failureLabel})`} />
               <p className="muted chart-note">
-                These are the activity categories the efficiency score counts as non-productive (lost) time — a
-                defined subset, not all reasons.
+                These are the categories counted as lost time when working out efficiency — not all reasons.
               </p>
             </>
           ) : (
-            <p className="muted">No downtime in range.</p>
+            <p className="muted">No time lost in this range.</p>
           )}
         </div>
       </div>

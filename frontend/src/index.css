@@ -1049,6 +1049,12 @@ input:focus-visible {
   margin: 0 0 0.25rem;
   font-size: var(--fs-title);
 }
+/* plain one-line "what question this answers" subtitle under a section title */
+.section-subtitle {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: var(--fs-card);
+}
 .report-section h4 {
   margin: 1rem 0 0.4rem;
 }

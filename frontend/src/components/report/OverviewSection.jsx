@@ -119,7 +119,7 @@ export default function OverviewSection({ dash }) {
         labels: dayKeys.map((k) => shortDate(k)),
         datasets: [
           {
-            label: "Downtime (hours)",
+            label: "Time lost (hours)",
             data: dayValues,
             borderColor: CHART_COLORS.downtime,
             backgroundColor: "rgba(220,38,38,0.12)",
@@ -131,7 +131,7 @@ export default function OverviewSection({ dash }) {
             order: 2,
           },
           {
-            label: `Daily avg ${num(dailyAvg)} h`,
+            label: `Typical day ${num(dailyAvg)} h`,
             data: dayValues.map(() => Number(dailyAvg.toFixed(2))),
             borderColor: CHART_COLORS.reference,
             borderDash: [6, 4],
@@ -145,7 +145,7 @@ export default function OverviewSection({ dash }) {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
-        scales: { y: { beginAtZero: true, title: { display: true, text: "Downtime (hours)" } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Hours lost" } } },
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -160,7 +160,7 @@ export default function OverviewSection({ dash }) {
         labels: wk.weekdays.map((w) => w.weekday),
         datasets: [
           {
-            label: "Avg downtime per day (hours)",
+            label: "Hours lost per day (avg)",
             data: wk.weekdays.map((w) => (w.avgDowntime == null ? 0 : Number(w.avgDowntime.toFixed(2)))),
             backgroundColor: wk.weekdays.map((w) => (wk.worst && w.index === wk.worst.index ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
             order: 2,
@@ -181,7 +181,7 @@ export default function OverviewSection({ dash }) {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
-        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg downtime per day (hours)" } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Hours lost per day" } } },
       },
     }),
     [wk]
@@ -193,7 +193,7 @@ export default function OverviewSection({ dash }) {
     () => ({
       type: "doughnut",
       data: {
-        labels: ["Productive", "Non-productive"],
+        labels: ["Working time", "Lost time"],
         datasets: [{ data: [Number(productive.toFixed(2)), Number(nonProductive.toFixed(2))], backgroundColor: ["#16a34a", "#dc2626"] }],
       },
       options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
@@ -211,18 +211,19 @@ export default function OverviewSection({ dash }) {
           {rep.dateRange.min ? `${shortDate(rep.dateRange.min)} – ${shortDate(rep.dateRange.max)} · ${rep.dateRange.days} days` : "No data"}
         </span>
       </div>
+      <p className="section-subtitle">How the operation did over this period.</p>
 
       <div className="kpi-row">
         <Tile
           label="Efficiency"
           value={pct(officialScore)}
-          note={officialGap == null ? `Goal ${num(rep.target, 0)}%` : `${officialGap >= 0 ? "Above" : "Below"} the ${num(rep.target, 0)}% goal`}
+          note={officialGap == null ? `Goal ${num(rep.target, 0)}%` : `${num(Math.abs(officialGap))} ${officialGap >= 0 ? "over" : "under"} the ${num(rep.target, 0)}% goal`}
           tone={effTone}
           tip={`Official Operational Efficiency = productive hours ÷ total hours × 100 = ${pct(officialScore)}${
             officialGap == null
               ? ""
-              : ` — ${officialGap >= 0 ? `${num(officialGap)} points above` : `${num(-officialGap)} points below`} the ${num(rep.target, 0)}% target`
-          }.${view.failureCustomized ? ` (With your custom failure set it would be ${pct(view.efficiency.score)}; the headline stays on the official set.)` : ""}`}
+              : `, which is ${num(Math.abs(officialGap))} percentage point${Math.abs(officialGap) === 1 ? "" : "s"} ${officialGap >= 0 ? "above" : "below"} the ${num(rep.target, 0)}% target`
+          }.${view.failureCustomized ? ` (With your custom failure set it would be ${pct(view.efficiency.score)}; the headline stays on the standard set.)` : ""}`}
         />
         <Tile
           label="Total time tracked"
@@ -246,14 +247,14 @@ export default function OverviewSection({ dash }) {
         <Tile
           label="Data issues found"
           value={num(view.flaggedCount, 0)}
-          note={`of ${view.total} rows`}
+          note={view.flaggedCount > 0 ? `about 1 in ${Math.max(2, Math.round(view.total / view.flaggedCount))} records` : "none found"}
           tone={flagTone}
-          tip={`${num(view.flaggedCount, 0)} of ${view.total} rows had a data issue (${pct(view.errorRate)}) — each was detected and handled automatically. See Data Quality for the breakdown.`}
+          tip={`${num(view.flaggedCount, 0)} of ${view.total} records had a data issue (${pct(view.errorRate)}) — each was found and fixed automatically before any number here was worked out. See the Data quality check for the breakdown.`}
         />
       </div>
 
       <h4>
-        Data-quality severity <InfoTip text={RULE_TEXT.severityTiers} label="How issues map to severity tiers" />
+        Data issues by severity <InfoTip text={RULE_TEXT.severityTiers} label="How issues map to severity tiers" />
       </h4>
       <SeverityBar severity={rep.severity.dataQuality} />
 
@@ -270,25 +271,25 @@ export default function OverviewSection({ dash }) {
 
       <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
-          <h4>Downtime over time</h4>
+          <h4>Time lost to failures, over time</h4>
           {dayKeys.length ? (
             <>
-              <ChartCanvas config={dailyConfig} height={240} downloadName="downtime-over-time" label="Daily downtime over time with the worst day marked and a daily-average line" />
+              <ChartCanvas config={dailyConfig} height={240} downloadName="time-lost-over-time" label="Time lost to failures each day, with the worst day marked and a typical-day line" />
               <p className="muted chart-note">
-                Worst day: <strong>{shortDate(dayKeys[worstIdx])}</strong> ({hrs(dayValues[worstIdx])}) · daily avg {hrs(dailyAvg)}
+                Worst day: <strong>{shortDate(dayKeys[worstIdx])}</strong> ({hrs(dayValues[worstIdx])} lost) · typical day {hrs(dailyAvg)}
               </p>
             </>
           ) : (
-            <p className="muted">No downtime in range.</p>
+            <p className="muted">No time lost in this range.</p>
           )}
         </div>
         <div className="mini-chart">
-          <h4>Productive vs non-productive</h4>
+          <h4>Working time vs lost time</h4>
           {off.total ? (
             <>
-              <ChartCanvas config={prodDonutConfig} height={240} downloadName="productive-vs-nonproductive" label="Productive versus non-productive hours" />
+              <ChartCanvas config={prodDonutConfig} height={240} downloadName="working-vs-lost-time" label="Working time versus time lost to failures" />
               <p className="muted chart-note">
-                {hrs(productive)} productive · {hrs(nonProductive)} non-productive ({pct(officialScore)} efficient)
+                {hrs(productive)} working · {hrs(nonProductive)} lost ({pct(officialScore)} efficient)
               </p>
             </>
           ) : (
@@ -299,13 +300,13 @@ export default function OverviewSection({ dash }) {
 
       <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
-          <h4>Average downtime by day of week</h4>
+          <h4>Which weekday is worst</h4>
           {wk.worst ? (
             <>
-              <ChartCanvas config={weekdayConfig} height={240} downloadName="downtime-by-weekday" label="Average downtime hours per weekday, worst day highlighted, with an overall-average line" />
+              <ChartCanvas config={weekdayConfig} height={240} downloadName="worst-weekday" label="Hours lost per day for each weekday, worst day highlighted, with an overall-average line" />
               <p className="muted chart-note">
-                {wk.worst.weekday} averages the most downtime — {hrs(wk.worst.avgDowntime)}/day · ~{weeks} week
-                {weeks === 1 ? "" : "s"} of data, so read it as indicative, not proven seasonality.
+                {wk.worst.weekday} loses the most time — about {hrs(wk.worst.avgDowntime)} per day. Based on ~{weeks} week
+                {weeks === 1 ? "" : "s"} of data, so treat it as a rough pattern, not proof.
               </p>
             </>
           ) : (
@@ -314,15 +315,15 @@ export default function OverviewSection({ dash }) {
         </div>
       </div>
 
-      <h4 style={{ marginTop: "1rem" }}>Week over week</h4>
+      <h4 style={{ marginTop: "1rem" }}>This week vs last week</h4>
       {wow ? (
         <p>
-          Latest week: <strong>{hrs(wow.last.downtime)}</strong> downtime —{" "}
+          Latest week: <strong>{hrs(wow.last.downtime)}</strong> lost to failures —{" "}
           <span className={wow.downtimeDelta <= 0 ? "good-text" : "bad-text"}>
             {wow.downtimeDelta <= 0 ? "▼" : "▲"} {hrs(Math.abs(wow.downtimeDelta))}
             {wow.downtimePctChange == null ? "" : ` (${num(Math.abs(wow.downtimePctChange))}%)`}
           </span>{" "}
-          vs the prior week.
+          vs the week before.
         </p>
       ) : (
         <p className="muted">Not enough weeks in range to compare.</p>
