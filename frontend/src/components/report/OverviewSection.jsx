@@ -7,6 +7,7 @@ import ChartCanvas from "../charts/ChartCanvas.jsx";
 import SeverityBar from "./SeverityBar.jsx";
 import { reasonColorMap, CHART_COLORS } from "../../lib/colors.js";
 import { uniqueReasons } from "../../lib/cleaning.js";
+import { downtimeByWeekday } from "../../lib/analysis.js";
 import { num, pct, hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
@@ -65,9 +66,13 @@ export default function OverviewSection({ dash }) {
   }
   const dayKeys = Object.keys(dayMap).sort();
   const dayValues = dayKeys.map((k) => Number(dayMap[k].toFixed(2)));
-  // worst day + daily average, to mark/annotate the daily-downtime bar (live)
+  // worst day + daily average, to mark/annotate the downtime-over-time line (live)
   const worstIdx = dayValues.length ? dayValues.indexOf(Math.max(...dayValues)) : -1;
   const dailyAvg = dayValues.length ? dayValues.reduce((a, b) => a + b, 0) / dayValues.length : 0;
+
+  // day-of-week pattern (folded in from the former Trends view)
+  const wk = useMemo(() => downtimeByWeekday(records, params.failureReasons), [records, params.failureReasons]);
+  const weeks = rep.dateRange.days ? Math.max(1, Math.round(rep.dateRange.days / 7)) : null;
 
   const donutConfig = useMemo(
     () => ({
@@ -87,21 +92,27 @@ export default function OverviewSection({ dash }) {
     [rep.reasonContribution, reasonColors]
   );
 
+  // downtime over time — a daily line, the worst day marked with a larger/darker
+  // point, and a dashed daily-average reference line
   const dailyConfig = useMemo(
     () => ({
-      type: "bar",
+      type: "line",
       data: {
         labels: dayKeys.map((k) => shortDate(k)),
         datasets: [
           {
             label: "Downtime h",
             data: dayValues,
-            // the worst day is marked with a darker bar
-            backgroundColor: dayValues.map((_, i) => (i === worstIdx ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
+            borderColor: CHART_COLORS.downtime,
+            backgroundColor: "rgba(220,38,38,0.12)",
+            tension: 0.3,
+            fill: true,
+            pointRadius: dayValues.map((_, i) => (i === worstIdx ? 5 : 2)),
+            pointBackgroundColor: dayValues.map((_, i) => (i === worstIdx ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
+            pointBorderColor: dayValues.map((_, i) => (i === worstIdx ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
             order: 2,
           },
           {
-            type: "line",
             label: `Daily avg ${num(dailyAvg)} h`,
             data: dayValues.map(() => Number(dailyAvg.toFixed(2))),
             borderColor: CHART_COLORS.reference,
@@ -121,6 +132,41 @@ export default function OverviewSection({ dash }) {
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(dayValues), worstIdx, dailyAvg]
+  );
+
+  // average downtime by day of week (folded in from Trends)
+  const weekdayConfig = useMemo(
+    () => ({
+      type: "bar",
+      data: {
+        labels: wk.weekdays.map((w) => w.weekday),
+        datasets: [
+          {
+            label: "Avg downtime h/day",
+            data: wk.weekdays.map((w) => (w.avgDowntime == null ? 0 : Number(w.avgDowntime.toFixed(2)))),
+            backgroundColor: wk.weekdays.map((w) => (wk.worst && w.index === wk.worst.index ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
+            order: 2,
+          },
+          {
+            type: "line",
+            label: `Overall avg ${num(wk.overallAvg)} h/day`,
+            data: wk.weekdays.map(() => (wk.overallAvg == null ? 0 : Number(wk.overallAvg.toFixed(2)))),
+            borderColor: CHART_COLORS.reference,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false,
+            order: 1,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg downtime h / day" } } },
+      },
+    }),
+    [wk]
   );
 
   // Productive vs Non-productive (tied to the efficiency score). Semantic colours
@@ -196,10 +242,10 @@ export default function OverviewSection({ dash }) {
           )}
         </div>
         <div className="mini-chart">
-          <h4>Daily downtime</h4>
+          <h4>Downtime over time</h4>
           {dayKeys.length ? (
             <>
-              <ChartCanvas config={dailyConfig} height={240} downloadName="daily-downtime" label="Daily downtime with daily-average line" />
+              <ChartCanvas config={dailyConfig} height={240} downloadName="downtime-over-time" label="Daily downtime over time with the worst day marked and a daily-average line" />
               <p className="muted chart-note">
                 Worst day: <strong>{shortDate(dayKeys[worstIdx])}</strong> ({hrs(dayValues[worstIdx])}) · daily avg {hrs(dailyAvg)}
               </p>
@@ -230,6 +276,23 @@ export default function OverviewSection({ dash }) {
             <ChartCanvas config={paretoConfig} height={240} downloadName="top-reasons" label="Top downtime reasons ranked by hours" />
           ) : (
             <p className="muted">No downtime in range.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="chart-grid" style={{ marginTop: "1rem" }}>
+        <div className="mini-chart">
+          <h4>Average downtime by day of week</h4>
+          {wk.worst ? (
+            <>
+              <ChartCanvas config={weekdayConfig} height={240} downloadName="downtime-by-weekday" label="Average downtime hours per weekday, worst day highlighted, with an overall-average line" />
+              <p className="muted chart-note">
+                {wk.worst.weekday} averages the most downtime — {hrs(wk.worst.avgDowntime)}/day · ~{weeks} week
+                {weeks === 1 ? "" : "s"} of data, so read it as indicative, not proven seasonality.
+              </p>
+            </>
+          ) : (
+            <p className="muted">Not enough dated records to show a weekday pattern.</p>
           )}
         </div>
       </div>

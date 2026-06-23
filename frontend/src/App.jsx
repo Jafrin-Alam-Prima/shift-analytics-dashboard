@@ -18,20 +18,18 @@ import OverviewSection from "./components/report/OverviewSection.jsx";
 import ShiftSection from "./components/report/ShiftSection.jsx";
 import StreaksSection from "./components/report/StreaksSection.jsx";
 import EfficiencySection from "./components/report/EfficiencySection.jsx";
-import TrendsSection from "./components/report/TrendsSection.jsx";
 import InsightsSection from "./components/report/InsightsSection.jsx";
 import { IconQuality, IconSettings } from "./components/icons.jsx";
 import { shortDate } from "./lib/format.js";
 
 // The analytical views — the whole sidebar. Everything else is a header role.
-const VIEWS = ["Overview", "Shift analysis", "Breakdown streaks", "Efficiency", "Trends", "Insights"];
+const VIEWS = ["Overview", "Shift analysis", "Breakdown streaks", "Efficiency", "Insights"];
 
 const SECTION_FOR = {
   Overview: OverviewSection,
   "Shift analysis": ShiftSection,
   "Breakdown streaks": StreaksSection,
   Efficiency: EfficiencySection,
-  Trends: TrendsSection,
   Insights: InsightsSection,
 };
 

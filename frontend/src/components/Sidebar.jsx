@@ -8,7 +8,6 @@ import {
   IconClock,
   IconStreak,
   IconGauge,
-  IconTrends,
   IconInsight,
   IconQuality,
 } from "./icons.jsx";
@@ -18,7 +17,6 @@ const ICONS = {
   "Shift analysis": IconClock,
   "Breakdown streaks": IconStreak,
   Efficiency: IconGauge,
-  Trends: IconTrends,
   Insights: IconInsight,
 };
 
