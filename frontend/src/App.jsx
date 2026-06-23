@@ -95,6 +95,16 @@ export default function App() {
     }
   }, [theme]);
 
+  // the SA logo / title acts as a home button: clear the active filters and
+  // return to the Overview view for a fresh look. Intentionally leaves the loaded
+  // dataset, per-row corrections, cleaning choices, data source, and theme intact.
+  function goHome() {
+    dash.resetFilters();
+    setView("Overview");
+    setOverlay(null);
+    setNavOpen(false);
+  }
+
   // header subtitle: dataset name + real date range (when available)
   const range = dash.ready && dash.view ? dash.view.report.dateRange : null;
   const dateRange =
@@ -108,6 +118,7 @@ export default function App() {
         views={VIEWS}
         active={view}
         onSelect={setView}
+        onHome={goHome}
         open={navOpen}
         onClose={() => setNavOpen(false)}
         onOpenDataQuality={() => setOverlay("dataQuality")}
@@ -119,6 +130,7 @@ export default function App() {
           appTitle="Shift Analytics"
           dateRange={dash.loadStatus === "loaded" ? dateRange : null}
           onMenu={() => setNavOpen(true)}
+          onHome={goHome}
           right={
             <>
               <TrustChip dash={dash} onOpen={() => setOverlay("dataQuality")} />

@@ -20,15 +20,24 @@ const ICONS = {
   Insights: IconInsight,
 };
 
-export default function Sidebar({ views, active, onSelect, open, onClose, onOpenDataQuality, dataQualityActive }) {
+export default function Sidebar({ views, active, onSelect, onHome, open, onClose, onOpenDataQuality, dataQualityActive }) {
   return (
     <>
       {open && <div className="sidebar-scrim" onClick={onClose} />}
       <aside className={open ? "sidebar open" : "sidebar"}>
-        <div className="brand">
+        <button
+          type="button"
+          className="brand"
+          onClick={() => {
+            if (onHome) onHome();
+            if (onClose) onClose();
+          }}
+          aria-label="Shift Analytics — go to Overview (home)"
+          title="Home — Overview"
+        >
           <span className="brand-mark">SA</span>
           <span className="brand-name">Shift Analytics</span>
-        </div>
+        </button>
         <nav className="side-nav" aria-label="Views">
           {views.map((v) => {
             const Icon = ICONS[v] || IconDashboard;

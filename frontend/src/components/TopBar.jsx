@@ -3,14 +3,28 @@
 // dark-mode, settings gear) supplied by the app shell.
 import { IconMenu } from "./icons.jsx";
 
-export default function TopBar({ appTitle, dateRange, onMenu, right }) {
+export default function TopBar({ appTitle, dateRange, onMenu, onHome, right }) {
   return (
     <header className="topbar">
       <button className="menu-btn" onClick={onMenu} aria-label="Open navigation">
         <IconMenu />
       </button>
       <div className="topbar-titles">
-        <h1 className="topbar-title">{appTitle}</h1>
+        <h1 className="topbar-title">
+          {onHome ? (
+            <button
+              type="button"
+              className="home-link"
+              onClick={onHome}
+              aria-label={`${appTitle} — go to Overview (home)`}
+              title="Home — Overview"
+            >
+              {appTitle}
+            </button>
+          ) : (
+            appTitle
+          )}
+        </h1>
         {dateRange && <span className="topbar-subtitle">{dateRange}</span>}
       </div>
       <div className="topbar-right">{right}</div>

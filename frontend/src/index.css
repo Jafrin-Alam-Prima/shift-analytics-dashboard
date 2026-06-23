@@ -163,11 +163,27 @@ h4 {
   height: 100vh;
   overflow-y: auto;
 }
+/* the brand doubles as a home button (clear filters -> Overview) */
 .brand {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  width: 100%;
   padding: 0.25rem 0.5rem 0.75rem;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.12s ease;
+}
+.brand:hover {
+  opacity: 0.85;
+}
+.brand:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 .brand-mark {
   background: #fff;
@@ -256,6 +272,24 @@ h4 {
   font-size: 1.05rem;
   margin: 0;
   color: #fff;
+}
+/* the header title doubles as a home button (clear filters -> Overview) */
+.topbar-title .home-link {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.12s ease;
+}
+.topbar-title .home-link:hover {
+  opacity: 0.85;
+}
+.topbar-title .home-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 .topbar-right {
   margin-left: auto;
