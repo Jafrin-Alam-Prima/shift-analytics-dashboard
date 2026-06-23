@@ -30,6 +30,14 @@ export function IconQuality(props) {
   );
 }
 
+export function IconFilter(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+    </svg>
+  );
+}
+
 export function IconReports(props) {
   return (
     <svg {...base} {...props}>

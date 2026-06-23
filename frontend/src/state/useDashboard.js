@@ -247,6 +247,10 @@ export function useDashboard() {
     setFilters(defaultFilters());
   }
 
+  // the Filters panel is expanded by default so the controls are discoverable on
+  // load; the toggle persists across view switches.
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
   // dataset helpers: upload a CSV (text) or reset to the bundled sample
   function loadCsvText(text, name) {
     try {
@@ -409,6 +413,8 @@ export function useDashboard() {
     setDateRange,
     resetFilters,
     datasetDates,
+    filtersOpen,
+    setFiltersOpen,
     filteredRecords,
     analysis,
     officialEfficiency,
