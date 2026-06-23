@@ -15,25 +15,31 @@
   --fw-semibold: 600;
   --fw-bold: 700;
 
-  /* ---- neutral surface scale ---- */
-  --bg: #f6f7f9; /* app background */
+  /* ---- brand (Renata-style corporate blue) ---- */
+  --brand-navy: #0e3f7e; /* header bar, sidebar, headings, KPI figures, logo */
+  --coral: #e8794b; /* secondary accent — used sparingly */
+
+  /* ---- neutral surface scale (blue / white) ---- */
+  --bg: #f5f8fc; /* app background (very light blue-gray) */
   --panel: #ffffff; /* card / surface */
-  --soft: #f1f3f5; /* subtle fills: inputs, hover, code */
-  --ink: #18181b; /* primary text */
-  --muted: #6b7280; /* secondary text */
-  --line: #e6e8ec; /* hairline border */
+  --soft: #e6f1fb; /* subtle fills: hover, chips, inputs */
+  --ink: #1f2a37; /* body text (dark slate) */
+  --muted: #5b6b7c; /* secondary text */
+  --line: #d6e3f0; /* hairline border (light blue-gray) */
+  --line-blue: #5fa4dd; /* stronger light-blue border (chips, accents) */
+  --heading: var(--brand-navy); /* headings + KPI figures */
 
   /* ---- accent + semantic roles ---- */
-  --accent: #2563eb;
-  --accent-soft: rgba(37, 99, 235, 0.1);
+  --accent: #2480c9; /* links, active nav, buttons, interactive */
+  --accent-soft: rgba(36, 128, 201, 0.12);
   --danger: #dc2626;
   --warning: #d97706;
   --success: #16a34a;
-  --info: #2563eb;
+  --info: #2480c9;
   --danger-soft: rgba(220, 38, 38, 0.1);
   --warning-soft: rgba(217, 119, 6, 0.12);
   --success-soft: rgba(22, 163, 74, 0.1);
-  --info-soft: rgba(37, 99, 235, 0.1);
+  --info-soft: rgba(36, 128, 201, 0.12);
   /* back-compat aliases (existing rules reference these) */
   --good: var(--success);
   --warn: var(--warning);
@@ -55,27 +61,30 @@
   font-family: var(--font-sans);
 }
 
-/* dark theme — neutral (Vercel/Linear-style), accessible contrast */
+/* dark theme — navy-tinted (same brand family), accessible contrast */
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b0b0d;
-  --panel: #161619;
-  --soft: #1f2024;
-  --ink: #ededee;
-  --muted: #a1a1aa;
-  --line: #2a2b30;
-  --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.16);
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --success: #22c55e;
-  --info: #3b82f6;
-  --danger-soft: rgba(239, 68, 68, 0.16);
-  --warning-soft: rgba(245, 158, 11, 0.16);
-  --success-soft: rgba(34, 197, 94, 0.16);
-  --info-soft: rgba(59, 130, 246, 0.16);
+  --bg: #081830; /* deep navy app background */
+  --panel: #0f2747; /* navy surface */
+  --soft: #16335c; /* subtle navy fill */
+  --ink: #e7eefb; /* light body text */
+  --muted: #9fb4d2; /* muted blue-gray */
+  --line: #21477a; /* navy border */
+  --line-blue: #2e5b92;
+  --heading: #d6e4fb; /* light headings / KPI figures on dark */
+  --accent: #4f9fe0;
+  --accent-soft: rgba(79, 159, 224, 0.2);
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --success: #34d399;
+  --info: #4f9fe0;
+  --danger-soft: rgba(248, 113, 113, 0.18);
+  --warning-soft: rgba(251, 191, 36, 0.18);
+  --success-soft: rgba(52, 211, 153, 0.18);
+  --info-soft: rgba(79, 159, 224, 0.2);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+  /* --brand-navy and --coral inherit from :root (the chrome stays brand navy) */
 }
 
 * {
@@ -122,7 +131,7 @@ h3,
 h4 {
   font-family: var(--font-sans);
   line-height: var(--lh-tight);
-  color: var(--ink);
+  color: var(--heading);
 }
 h2 {
   font-size: var(--fs-title);
@@ -142,9 +151,8 @@ h4 {
 }
 
 .sidebar {
-  background: var(--panel);
-  color: var(--ink);
-  border-right: 1px solid var(--line);
+  background: var(--brand-navy);
+  color: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
@@ -161,8 +169,8 @@ h4 {
   padding: 0.25rem 0.5rem 0.75rem;
 }
 .brand-mark {
-  background: var(--accent);
-  color: #fff;
+  background: #fff;
+  color: var(--brand-navy);
   font-weight: var(--fw-bold);
   border-radius: var(--radius-sm);
   width: 32px;
@@ -173,7 +181,7 @@ h4 {
 }
 .brand-name {
   font-weight: var(--fw-semibold);
-  color: var(--ink);
+  color: #fff;
   font-size: var(--fs-card);
 }
 .side-nav {
@@ -188,7 +196,7 @@ h4 {
   width: 100%;
   border: none;
   background: none;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.78);
   padding: 0.5rem 0.6rem;
   border-radius: var(--radius-sm);
   font-size: var(--fs-body);
@@ -198,26 +206,26 @@ h4 {
   transition: background 0.12s ease, color 0.12s ease;
 }
 .side-link:hover {
-  background: var(--soft);
-  color: var(--ink);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 .side-link.active {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--accent);
+  color: #fff;
   font-weight: var(--fw-semibold);
 }
 
 /* separated "Methodology" group (Data Quality) below the analytical views */
 .side-divider {
   height: 1px;
-  background: var(--line);
+  background: rgba(255, 255, 255, 0.14);
   margin: 0.7rem 0.6rem 0.5rem;
 }
 .side-group-label {
   font-size: var(--fs-caption);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.55);
   padding: 0 0.6rem 0.35rem;
 }
 
@@ -233,15 +241,17 @@ h4 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--panel);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--line);
+  background: var(--brand-navy);
+  color: #fff;
+  /* coral accent line under the navy bar (sparing secondary accent) */
+  border-bottom: 2px solid var(--coral);
   /* extra right gutter so the last control (settings gear) isn't flush to the edge */
   padding: 0.7rem 1.75rem 0.7rem 1.25rem;
 }
 .topbar-title {
   font-size: 1.05rem;
   margin: 0;
+  color: #fff;
 }
 .topbar-right {
   margin-left: auto;
@@ -249,12 +259,32 @@ h4 {
   align-items: center;
   gap: 0.6rem;
 }
+/* header controls sit on navy: white text, translucent fills */
+.topbar .topbar-subtitle {
+  color: rgba(255, 255, 255, 0.72);
+}
+.topbar .src-status {
+  color: rgba(255, 255, 255, 0.85);
+}
+.topbar .icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+.topbar .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+}
+.topbar .trust-chip {
+  border-color: rgba(255, 255, 255, 0.35);
+}
 .menu-btn {
   display: none;
   border: none;
   background: none;
   cursor: pointer;
-  color: var(--ink);
+  color: #fff;
   padding: 0.2rem;
 }
 
@@ -613,6 +643,7 @@ input:focus-visible {
   font-weight: var(--fw-bold);
   line-height: var(--lh-tight);
   letter-spacing: -0.01em;
+  color: var(--heading);
 }
 .kpi-label {
   color: var(--muted);
@@ -1182,6 +1213,7 @@ input:focus-visible {
   font-size: 2.6rem;
   font-weight: 800;
   min-width: 130px;
+  color: var(--heading);
 }
 .gauge-side {
   flex: 1;
