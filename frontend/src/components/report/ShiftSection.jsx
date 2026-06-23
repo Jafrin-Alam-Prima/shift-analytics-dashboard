@@ -75,8 +75,9 @@ export default function ShiftSection({ dash }) {
   return (
     <section className="card report-section">
       <h2>Shift analysis</h2>
+      <p className="section-subtitle">What happens across the morning, afternoon, and night shifts.</p>
       {!hasData ? (
-        <p className="muted">No shifts with a start time to bucket into windows.</p>
+        <p className="muted">No shifts with a start time to sort into morning, afternoon, or night.</p>
       ) : (
         <>
           <table className="issue-table">
@@ -85,8 +86,8 @@ export default function ShiftSection({ dash }) {
                 <th>Shift</th>
                 <th>Incidents</th>
                 <th>Hours</th>
-                <th>Avg</th>
-                <th>Median</th>
+                <th>Average</th>
+                <th>Typical</th>
               </tr>
             </thead>
             <tbody>
@@ -104,7 +105,7 @@ export default function ShiftSection({ dash }) {
 
           <div className="chart-grid" style={{ marginTop: "1rem" }}>
             <div className="mini-chart">
-              <h4>Hours by shift × reason</h4>
+              <h4>Hours by shift and reason</h4>
               <ChartCanvas config={stackedConfig} height={260} downloadName="shift-by-reason" label="Hours by shift and reason" />
             </div>
             <div className="mini-chart">
@@ -112,8 +113,8 @@ export default function ShiftSection({ dash }) {
               <ChartCanvas config={incidentsConfig} height={260} downloadName="incidents-per-shift" label="Incidents per shift" />
             </div>
             <div className="mini-chart">
-              <h4>Avg duration by shift</h4>
-              <ChartCanvas config={avgConfig} height={260} downloadName="avg-duration-by-shift" label="Average duration by shift" />
+              <h4>Average shift length, by shift</h4>
+              <ChartCanvas config={avgConfig} height={260} downloadName="avg-shift-length" label="Average shift length by shift" />
             </div>
           </div>
         </>

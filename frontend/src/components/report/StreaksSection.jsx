@@ -2,7 +2,6 @@
 // assumptions" note, and a month-style downtime calendar — each day shaded by its
 // failure hours, streak days outlined by severity.
 import { streakBand } from "../../lib/report.js";
-import { STREAK_METHODS } from "../../lib/config.js";
 import { downtimeByDate } from "../../lib/analysis.js";
 import { hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
@@ -24,16 +23,15 @@ export default function StreaksSection({ dash }) {
   const bands = params.report.severityBands;
   const range = view.report.dateRange;
 
-  // plain-language "Method & assumptions", read straight from config (dynamic)
+  // plain-language "how this is counted", read straight from config (dynamic)
   const streak = params.streak;
-  const methodLabel = (STREAK_METHODS.find((m) => m.value === streak.method) || {}).label || streak.method;
   let methodText;
   if (streak.method === "window") {
-    methodText = `failure shifts that fall within a ${streak.windowHours}-hour window of each other (at least ${streak.minStreakShifts} shift${streak.minStreakShifts === 1 ? "" : "s"})`;
+    methodText = `failure shifts within ${streak.windowHours} hours of each other (at least ${streak.minStreakShifts} shift${streak.minStreakShifts === 1 ? "" : "s"})`;
   } else if (streak.method === "shift") {
-    methodText = `back-to-back failure shifts (at least ${streak.minStreakShifts} in a row)`;
+    methodText = `failure shifts back to back (at least ${streak.minStreakShifts} in a row)`;
   } else {
-    methodText = `consecutive calendar days that each have at least one failure shift (minimum ${streak.minStreakDays} day${streak.minStreakDays === 1 ? "" : "s"}, gaps up to ${streak.maxGapDays} day${streak.maxGapDays === 1 ? "" : "s"})`;
+    methodText = `days in a row that each had at least one failure shift (at least ${streak.minStreakDays} day${streak.minStreakDays === 1 ? "" : "s"}, with gaps up to ${streak.maxGapDays} day${streak.maxGapDays === 1 ? "" : "s"})`;
   }
   const failureList = params.failureReasons.join(", ");
 
@@ -53,26 +51,27 @@ export default function StreaksSection({ dash }) {
       <h2>
         Breakdown streaks <InfoTip text={RULE_TEXT.streak} label="What counts as a streak" />
       </h2>
+      <p className="section-subtitle">When breakdowns happened several days in a row.</p>
 
       <div className="method-card">
-        <h4>Method &amp; assumptions</h4>
+        <h4>How this is counted</h4>
         <ul className="method-list">
           <li>
-            A <strong>failure</strong> is any shift whose reason is in: {failureList || "—"}.
+            A <strong>failure</strong> means a shift whose reason is one of: {failureList || "—"}.
           </li>
           <li>
-            Method — <strong>{methodLabel}</strong>: a streak is {methodText}.
+            A streak is {methodText}.
           </li>
           <li>
-            Severity by total breakdown hours: <strong>low</strong> below {hrs(bands.medium)}, <strong>medium</strong>{" "}
+            How serious (by hours lost): <strong>low</strong> below {hrs(bands.medium)}, <strong>medium</strong>{" "}
             {hrs(bands.medium)}–{hrs(bands.high)}, <strong>high</strong> at {hrs(bands.high)} and above.
           </li>
-          <li className="muted">Applied automatically from the documented analysis defaults.</li>
+          <li className="muted">Worked out automatically from the documented defaults.</li>
         </ul>
       </div>
 
       {streaks.length === 0 ? (
-        <p className="muted">No breakdown streaks with the current settings.</p>
+        <p className="muted">No streaks of breakdown days in this range.</p>
       ) : (
         <div className="streak-cards">
           {streaks.map((s, i) => {
@@ -84,7 +83,7 @@ export default function StreaksSection({ dash }) {
                   {shortDate(s.start)}–{shortDate(s.end)}
                 </div>
                 <div className="muted">
-                  {s.lengthDays} day{s.lengthDays === 1 ? "" : "s"} · {s.count} shift{s.count === 1 ? "" : "s"} · {hrs(s.hours)}
+                  {s.lengthDays} day{s.lengthDays === 1 ? "" : "s"} · {s.count} shift{s.count === 1 ? "" : "s"} · {hrs(s.hours)} lost
                 </div>
               </div>
             );
@@ -92,7 +91,7 @@ export default function StreaksSection({ dash }) {
         </div>
       )}
 
-      <h4>Downtime calendar ({range.min ? `${shortDate(range.min)} – ${shortDate(range.max)}` : "no range"})</h4>
+      <h4>Time lost, day by day ({range.min ? `${shortDate(range.min)} – ${shortDate(range.max)}` : "no range"})</h4>
       <DowntimeCalendar byDate={byDate} datesWithData={datesWithData} streakDayBand={streakDayBand} range={range} />
     </section>
   );

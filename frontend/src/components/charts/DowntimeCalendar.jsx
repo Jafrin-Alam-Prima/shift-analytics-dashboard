@@ -88,7 +88,7 @@ export default function DowntimeCalendar({ byDate, datesWithData, streakDayBand,
                     const cls = `cal-cell${has ? "" : " cal-nodata"}${band ? ` ${SEV_CLASS[band]}` : ""}${sel === key ? " cal-selected" : ""}`;
                     const title = !has
                       ? `${shortDate(key)} · no data`
-                      : `${shortDate(key)} · ${hrs(h)} downtime · ${count} incident${count === 1 ? "" : "s"}${band ? ` · in streak (${band})` : ""}${reasons.length ? ` · ${reasons.join(", ")}` : ""}`;
+                      : `${shortDate(key)} · ${hrs(h)} lost · ${count} incident${count === 1 ? "" : "s"}${band ? ` · in a ${band} streak` : ""}${reasons.length ? ` · ${reasons.join(", ")}` : ""}`;
                     return (
                       <div
                         key={key}
@@ -130,7 +130,7 @@ export default function DowntimeCalendar({ byDate, datesWithData, streakDayBand,
             <i style={{ background: "rgba(220,38,38,0.45)" }} />
             <i style={{ background: "rgba(220,38,38,0.72)" }} />
             <i style={{ background: "rgba(220,38,38,1)" }} />
-            <span className="muted">more downtime</span>
+            <span className="muted">more time lost</span>
           </span>
           <span className="cal-legend-item"><span className="cal-swatch cal-high" /> high</span>
           <span className="cal-legend-item"><span className="cal-swatch cal-medium" /> medium</span>
@@ -159,11 +159,11 @@ export default function DowntimeCalendar({ byDate, datesWithData, streakDayBand,
                 ))}
               </ul>
               <div className="cal-detail-total">
-                Total: {hrs(selInfo.hours)} · {selInfo.count} incident{selInfo.count === 1 ? "" : "s"}
+                Total lost: {hrs(selInfo.hours)} · {selInfo.count} incident{selInfo.count === 1 ? "" : "s"}
               </div>
             </>
           ) : (
-            <p className="muted">No failure incidents recorded this day.</p>
+            <p className="muted">No time lost on this day.</p>
           )}
         </aside>
       )}
