@@ -69,7 +69,7 @@ export default function ExtraCharts({ records, allRecords, groups, failureReason
         labels: byDay.map((d) => shortDate(d.dateKey)),
         datasets: [
           {
-            label: "Efficiency %",
+            label: "Efficiency (%)",
             data: byDay.map((d) => (d.score == null ? null : round1(d.score))),
             borderColor: "#1e5ba8",
             backgroundColor: "rgba(30,91,168,0.15)",
@@ -83,7 +83,7 @@ export default function ExtraCharts({ records, allRecords, groups, failureReason
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: false } },
-        scales: { y: { min: 0, max: 100, title: { display: true, text: "Efficiency %" } } },
+        scales: { y: { min: 0, max: 100, title: { display: true, text: "Efficiency (%)" } } },
       },
     }),
     [byDay]

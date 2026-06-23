@@ -60,13 +60,13 @@ export default function ShiftSection({ dash }) {
       type: "bar",
       data: {
         labels: slots.map((s) => s.label),
-        datasets: [{ label: "Avg h", data: slots.map((s) => (s.avg == null ? 0 : Number(s.avg.toFixed(2)))), backgroundColor: slots.map((_, i) => SLOT_COLORS[i % SLOT_COLORS.length]) }],
+        datasets: [{ label: "Avg duration (hours)", data: slots.map((s) => (s.avg == null ? 0 : Number(s.avg.toFixed(2)))), backgroundColor: slots.map((_, i) => SLOT_COLORS[i % SLOT_COLORS.length]) }],
       },
       options: {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg shift h" } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg duration (hours)" } } },
       },
     }),
     [slots]

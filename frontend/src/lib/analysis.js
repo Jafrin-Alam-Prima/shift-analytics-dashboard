@@ -39,6 +39,17 @@ export function hoursByReason(records) {
   return map;
 }
 
+// total logged hours for EVERY reason, sorted high→low with each reason's share
+// of the total. Display-side and additive (like downtimeByWeekday/downtimeByDate)
+// — reuses hoursByReason, touches no official metric, and is not part of the
+// /analyze contract, so local⇄backend parity is unaffected.
+export function hoursByReasonSorted(records) {
+  const map = hoursByReason(records);
+  const entries = Object.entries(map).filter(([, h]) => h > 0).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, [, h]) => s + h, 0);
+  return entries.map(([reason, hours]) => ({ reason, hours, pct: total > 0 ? (hours / total) * 100 : 0 }));
+}
+
 // total hours per group (uses the configured grouping)
 export function hoursByGroup(records, groups) {
   const map = {};
@@ -345,8 +356,11 @@ export function decisionCards(ctx) {
   if (!report) return [];
 
   const cards = [];
-  // the official score is pinned to the default failure set, so name those here
-  const failureList = DEFAULT_FAILURE_REASONS.length ? DEFAULT_FAILURE_REASONS.join(" + ") : "failure categories";
+  // the official score is pinned to the default failure set, so name those here —
+  // keep the real reason names, just frame them as the failure categories
+  const failureList = DEFAULT_FAILURE_REASONS.length
+    ? `failure categories (${DEFAULT_FAILURE_REASONS.join(", ")})`
+    : "failure categories";
 
   // 1) largest downtime driver — top reason by hours, its share + incident count
   const top = report.reasonContribution && report.reasonContribution[0];
@@ -373,7 +387,7 @@ export function decisionCards(ctx) {
     if (failureHours > 0 && off.total - failureHours / 2 > 0) {
       const projected = (off.productive / (off.total - failureHours / 2)) * 100;
       evidence += `${failureList} account for ${hrs(failureHours)} of the ${hrs(off.total)} logged. As arithmetic: avoiding half of that downtime would lift efficiency to about ${pct(projected)}.`;
-      action = `→ ${gap >= 0 ? "Hold the margin by keeping" : "Close the gap by cutting"} ${failureList} downtime. Target: ~${pct(projected)} efficiency by halving those losses.`;
+      action = `→ ${gap >= 0 ? "Hold the margin by keeping" : "Close the gap by cutting"} downtime in the ${failureList}. Target: ~${pct(projected)} efficiency by halving those losses.`;
     } else {
       evidence += `No failure-category downtime was recorded, so there is no efficiency loss to recover here.`;
       action = `→ Maintain current practice — efficiency is at or above target with no recorded failure downtime.`;

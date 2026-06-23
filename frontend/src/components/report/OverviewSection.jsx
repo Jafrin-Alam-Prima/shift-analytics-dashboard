@@ -1,13 +1,14 @@
 // Overview section of the manager report: colour-coded KPI tiles, the
-// data-quality severity bar, a downtime-by-reason donut + daily-downtime bar, and
-// a week-over-week comparison. Everything reads R1 metrics (view.report) and the
+// data-quality severity bar, an all-activities "hours by reason" chart, a
+// downtime-over-time line, the productive split, a day-of-week pattern, and a
+// week-over-week comparison. Everything reads R1 metrics (view.report) and the
 // filtered records, so it adapts to any date range / dataset.
 import { useMemo } from "react";
 import ChartCanvas from "../charts/ChartCanvas.jsx";
 import SeverityBar from "./SeverityBar.jsx";
 import { reasonColorMap, CHART_COLORS } from "../../lib/colors.js";
 import { uniqueReasons } from "../../lib/cleaning.js";
-import { downtimeByWeekday } from "../../lib/analysis.js";
+import { downtimeByWeekday, hoursByReasonSorted } from "../../lib/analysis.js";
 import { num, pct, hrs, shortDate } from "../../lib/format.js";
 import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
@@ -74,22 +75,33 @@ export default function OverviewSection({ dash }) {
   const wk = useMemo(() => downtimeByWeekday(records, params.failureReasons), [records, params.failureReasons]);
   const weeks = rep.dateRange.days ? Math.max(1, Math.round(rep.dateRange.days / 7)) : null;
 
-  const donutConfig = useMemo(
+  // total logged hours for EVERY reason (all activities), sorted high→low
+  const allReasons = useMemo(() => hoursByReasonSorted(records), [records]);
+  const hoursByReasonConfig = useMemo(
     () => ({
-      type: "doughnut",
+      type: "bar",
       data: {
-        labels: rep.reasonContribution.map((c) => c.reason),
+        labels: allReasons.map((r) => r.reason),
         datasets: [
           {
-            data: rep.reasonContribution.map((c) => Number(c.hours.toFixed(2))),
-            backgroundColor: rep.reasonContribution.map((c) => reasonColors[c.reason] || "#94a3b8"),
+            label: "Hours",
+            data: allReasons.map((r) => Number(r.hours.toFixed(2))),
+            backgroundColor: allReasons.map((r) => reasonColors[r.reason] || "#94a3b8"),
           },
         ],
       },
-      // legend beneath the donut so it sits close, not across a wide right-hand gap
-      options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } } },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => `${hrs(ctx.parsed.x)} (${pct(allReasons[ctx.dataIndex].pct)} of hours)` } },
+        },
+        scales: { x: { beginAtZero: true, title: { display: true, text: "Hours" } } },
+      },
     }),
-    [rep.reasonContribution, reasonColors]
+    [allReasons, reasonColors]
   );
 
   // downtime over time — a daily line, the worst day marked with a larger/darker
@@ -101,7 +113,7 @@ export default function OverviewSection({ dash }) {
         labels: dayKeys.map((k) => shortDate(k)),
         datasets: [
           {
-            label: "Downtime h",
+            label: "Downtime (hours)",
             data: dayValues,
             borderColor: CHART_COLORS.downtime,
             backgroundColor: "rgba(220,38,38,0.12)",
@@ -127,7 +139,7 @@ export default function OverviewSection({ dash }) {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
-        scales: { y: { beginAtZero: true, title: { display: true, text: "Downtime h" } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Downtime (hours)" } } },
       },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,7 +154,7 @@ export default function OverviewSection({ dash }) {
         labels: wk.weekdays.map((w) => w.weekday),
         datasets: [
           {
-            label: "Avg downtime h/day",
+            label: "Avg downtime per day (hours)",
             data: wk.weekdays.map((w) => (w.avgDowntime == null ? 0 : Number(w.avgDowntime.toFixed(2)))),
             backgroundColor: wk.weekdays.map((w) => (wk.worst && w.index === wk.worst.index ? CHART_COLORS.downtimeWorst : CHART_COLORS.downtime)),
             order: 2,
@@ -163,7 +175,7 @@ export default function OverviewSection({ dash }) {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12 } } },
-        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg downtime h / day" } } },
+        scales: { y: { beginAtZero: true, title: { display: true, text: "Avg downtime per day (hours)" } } },
       },
     }),
     [wk]
@@ -181,26 +193,6 @@ export default function OverviewSection({ dash }) {
       options: { maintainAspectRatio: false, animation: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } } },
     }),
     [productive, nonProductive]
-  );
-
-  // Top reasons by downtime hours (Pareto-style, already sorted high→low),
-  // coloured via reasonColorMap so any reason — new ones included — gets a colour.
-  const paretoConfig = useMemo(
-    () => ({
-      type: "bar",
-      data: {
-        labels: rep.reasonContribution.map((c) => c.reason),
-        datasets: [{ label: "Downtime h", data: rep.reasonContribution.map((c) => Number(c.hours.toFixed(2))), backgroundColor: rep.reasonContribution.map((c) => reasonColors[c.reason] || "#94a3b8") }],
-      },
-      options: {
-        maintainAspectRatio: false,
-        animation: false,
-        indexAxis: "y",
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${hrs(ctx.parsed.x)} (${pct(rep.reasonContribution[ctx.dataIndex].pct)})` } } },
-        scales: { x: { beginAtZero: true, title: { display: true, text: "Downtime h" } } },
-      },
-    }),
-    [rep.reasonContribution, reasonColors]
   );
 
   const wow = rep.wow;
@@ -234,13 +226,16 @@ export default function OverviewSection({ dash }) {
 
       <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
-          <h4>Downtime by reason</h4>
-          {rep.reasonContribution.length ? (
-            <ChartCanvas config={donutConfig} height={240} downloadName="downtime-by-reason" label="Downtime by reason" />
+          <h4>Hours by reason (all activities)</h4>
+          {allReasons.length ? (
+            <ChartCanvas config={hoursByReasonConfig} height={300} downloadName="hours-by-reason" label="Total logged hours by activity reason — all reasons, ranked high to low" />
           ) : (
-            <p className="muted">No downtime in range.</p>
+            <p className="muted">No data in range.</p>
           )}
         </div>
+      </div>
+
+      <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
           <h4>Downtime over time</h4>
           {dayKeys.length ? (
@@ -254,9 +249,6 @@ export default function OverviewSection({ dash }) {
             <p className="muted">No downtime in range.</p>
           )}
         </div>
-      </div>
-
-      <div className="chart-grid" style={{ marginTop: "1rem" }}>
         <div className="mini-chart">
           <h4>Productive vs non-productive</h4>
           {off.total ? (
@@ -268,14 +260,6 @@ export default function OverviewSection({ dash }) {
             </>
           ) : (
             <p className="muted">No hours in range.</p>
-          )}
-        </div>
-        <div className="mini-chart">
-          <h4>Top reasons by downtime hours</h4>
-          {rep.reasonContribution.length ? (
-            <ChartCanvas config={paretoConfig} height={240} downloadName="top-reasons" label="Top downtime reasons ranked by hours" />
-          ) : (
-            <p className="muted">No downtime in range.</p>
           )}
         </div>
       </div>

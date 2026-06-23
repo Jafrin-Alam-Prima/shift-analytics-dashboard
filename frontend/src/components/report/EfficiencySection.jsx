@@ -11,10 +11,13 @@ import { RULE_TEXT } from "../../lib/ruleText.js";
 import InfoTip from "../InfoTip.jsx";
 
 export default function EfficiencySection({ dash }) {
-  const { view } = dash;
+  const { view, params } = dash;
   const rep = view.report;
   const off = view.officialEfficiency; // pinned: {score, productive, total}
   const target = rep.target;
+  // the failure set the contribution chart breaks down (the categories the score
+  // treats as non-productive) — named explicitly so it reads as a defined subset
+  const failureLabel = params.failureReasons.join(", ");
   const gap = off.score == null ? null : off.score - target;
   // the worked derivation (with live numbers) lives in the "i" tooltip, not on screen
   const effTip =
@@ -44,7 +47,7 @@ export default function EfficiencySection({ dash }) {
         labels: rep.byWeek.map((w) => shortDate(w.startKey)),
         datasets: [
           {
-            label: "Efficiency %",
+            label: "Efficiency (%)",
             data: rep.byWeek.map((w) => (w.score == null ? null : Number(w.score.toFixed(1)))),
             borderColor: "#1e5ba8",
             backgroundColor: "rgba(30,91,168,0.15)",
@@ -66,7 +69,7 @@ export default function EfficiencySection({ dash }) {
         maintainAspectRatio: false,
         animation: false,
         plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } },
-        scales: { y: { min: 0, max: 100, title: { display: true, text: "Efficiency %" } } },
+        scales: { y: { min: 0, max: 100, title: { display: true, text: "Efficiency (%)" } } },
       },
     }),
     [rep.byWeek, target]
@@ -84,7 +87,7 @@ export default function EfficiencySection({ dash }) {
         animation: false,
         indexAxis: "y",
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, title: { display: true, text: "Downtime h" } } },
+        scales: { x: { beginAtZero: true, title: { display: true, text: "Downtime (hours)" } } },
       },
     }),
     [rep.reasonContribution, reasonColors]
@@ -136,9 +139,15 @@ export default function EfficiencySection({ dash }) {
           )}
         </div>
         <div className="mini-chart">
-          <h4>Downtime contribution by reason</h4>
+          <h4>Failure downtime by category ({failureLabel})</h4>
           {rep.reasonContribution.length ? (
-            <ChartCanvas config={contribConfig} height={240} downloadName="downtime-contribution" label="Downtime contribution by reason" />
+            <>
+              <ChartCanvas config={contribConfig} height={240} downloadName="failure-downtime-by-category" label={`Failure downtime by category (${failureLabel})`} />
+              <p className="muted chart-note">
+                These are the activity categories the efficiency score counts as non-productive (lost) time — a
+                defined subset, not all reasons.
+              </p>
+            </>
           ) : (
             <p className="muted">No downtime in range.</p>
           )}
