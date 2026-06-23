@@ -2,6 +2,8 @@
 
 **Live demo: [shift-analytics-dashboard.vercel.app](https://shift-analytics-dashboard.vercel.app)**
 
+![The Shift Analytics Dashboard — Overview](docs/overview.png)
+
 A web app that turns messy factory shift-log data into a clean operational story. It detects and
 handles data-quality issues, scores operational efficiency, finds recurring breakdown streaks, draws
 shift and time-based visualizations, and surfaces plain-language insights a plant manager can act on.
@@ -12,6 +14,28 @@ It runs two ways:
   canonical result.
 - **Backend mode** — a Django + pandas API recomputes the same numbers with the same
   rules, so both modes always agree. A built-in parity check proves it.
+
+---
+
+## The dashboard
+
+Switch between focused views in the sidebar:
+
+- **Overview** — the headline at a glance: efficiency, total time tracked, time lost to failures, and
+  the average shift — plus where the time went by activity, time lost over time, working vs lost time,
+  and which weekday is worst.
+- **Shift analysis** — how work and lost time split across the morning, afternoon, and night shifts,
+  with a timeline of every shift.
+- **Breakdown streaks** — when breakdowns happened several days in a row, shown on a day-by-day
+  calendar of time lost.
+- **Efficiency** — how much of the tracked time was working time versus lost to failures, with the
+  week-by-week trend against the goal.
+- **Insights** — plain-language decision cards: what to look at, and what to do about it.
+- **Data quality check** — what was found and fixed in the raw data before any number was counted:
+  every issue type, how it's spotted, and how it's handled.
+
+> Time-based trends (time lost over time, the worst weekday) were once a separate **Trends** view —
+> they now live on the Overview.
 
 ---
 
