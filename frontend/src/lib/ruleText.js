@@ -11,13 +11,14 @@ export const RULE_TEXT = {
     "Each data issue maps to a fixed tier — missing start/end = critical; negative, hours-conflict, invalid date = warning; cross-midnight, reason tidy = info; duplicate = its own tier.",
 };
 
-// per-issue cleaning-strategy explanations, keyed by the control key
+// per-issue "how it's handled" explanations (shown in the Data quality table),
+// keyed by the control key — plain language, no field names in caps
 export const CLEANING_RULE_TEXT = {
-  badDate: "Invalid dates fall back to the row's own start-timestamp date.",
-  missingTime: "Rows missing a start/end are kept and counted, but left off the timeline.",
-  negativeHours: "Negative hours are recomputed from start–end when possible, otherwise excluded.",
-  hoursConflict: "When HOURS disagrees with start–end, start–end wins (HOURS is only a fallback).",
-  duplicate: "Identical rows: keep one copy, drop the extras.",
-  reasonCase: "Reason text is trimmed and inner spaces are collapsed.",
-  crossMidnight: "Shifts that cross midnight are kept and flagged (valid, just unusual).",
+  badDate: "We use the date from the row's start time instead.",
+  missingTime: "Kept and counted, but left off the timeline.",
+  negativeHours: "Recomputed from start–end where possible, otherwise left out of the totals.",
+  hoursConflict: "We trust the start–end times (the recorded hours are only a backup).",
+  duplicate: "We keep one copy and drop the extras.",
+  reasonCase: "The label is trimmed and tidied.",
+  crossMidnight: "Kept and flagged — it's valid, just unusual.",
 };

@@ -54,9 +54,10 @@ export default function InsightsSection({ dash }) {
   return (
     <section className="card report-section">
       <h2>Insights</h2>
+      <p className="section-subtitle">What to look at, and what to do about it.</p>
       <p className="boundary-caption">
-        Each card is a pattern in the data with a recommended action. Findings are facts; suggested causes
-        are for your team to confirm.
+        Each card is something we spotted in the data, with a suggested action. The findings are facts; any
+        possible causes are for your team to check.
       </p>
 
       {cards.length === 0 ? (

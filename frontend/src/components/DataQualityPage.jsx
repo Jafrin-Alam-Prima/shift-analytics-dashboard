@@ -25,14 +25,14 @@ const ISSUE_TO_CONTROL = {
 
 // how each issue is spotted (documents the cleaning engine's detection rules)
 const DETECTION_TEXT = {
-  missingStart: "The start timestamp is missing or can't be parsed.",
-  missingEnd: "The end timestamp is missing or can't be parsed.",
-  badDate: "The date isn't a valid calendar date.",
-  negativeHours: "The HOURS value is below zero.",
-  hoursConflict: "HOURS disagrees with the start–end duration.",
-  crossMidnight: "The shift's start and end fall on different days.",
-  duplicate: "The row is identical to another row.",
-  reasonCase: "The reason text has stray casing or whitespace to tidy.",
+  missingStart: "The start time is missing or can't be read.",
+  missingEnd: "The end time is missing or can't be read.",
+  badDate: "The date isn't a real calendar date.",
+  negativeHours: "The recorded hours are below zero.",
+  hoursConflict: "The recorded hours don't match the start–end times.",
+  crossMidnight: "The start and end fall on different days.",
+  duplicate: "The record is identical to another one.",
+  reasonCase: "The label has odd spacing or capitalisation to tidy.",
 };
 
 const SEV_LABEL = { critical: "Critical", warning: "Warning", info: "Info", duplicate: "Duplicate" };
@@ -52,12 +52,12 @@ export default function DataQualityPage({ dash }) {
 
       {flagged > 0 && (
         <p className="custom-note">
-          <strong>Why cleaning matters:</strong>{" "}
+          <strong>Why this matters:</strong>{" "}
           {impact
             ? impact.overstatePct != null
-              ? `handling the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} prevented ${impact.reason} from being overstated by ~${pct(impact.overstatePct)} (${hrs(impact.rawH)} raw → ${hrs(impact.cleanH)} cleaned).`
-              : `handling the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} removed ${hrs(impact.rawH)} of phantom ${impact.reason} hours that would otherwise have inflated the totals.`
-            : `the ${num(flagged, 0)} flagged row${flagged === 1 ? "" : "s"} were corrected before any figure here was computed, so every number reflects cleaned data.`}
+              ? `fixing the ${num(flagged, 0)} record${flagged === 1 ? "" : "s"} with issues kept ${impact.reason} from looking about ${pct(impact.overstatePct)} bigger than it really was (${hrs(impact.rawH)} before cleaning → ${hrs(impact.cleanH)} after).`
+              : `fixing the ${num(flagged, 0)} record${flagged === 1 ? "" : "s"} with issues removed ${hrs(impact.rawH)} of ${impact.reason} hours that weren't real and would have inflated the totals.`
+            : `the ${num(flagged, 0)} record${flagged === 1 ? "" : "s"} with issues were fixed before any number here was worked out, so every figure reflects cleaned data.`}
         </p>
       )}
 

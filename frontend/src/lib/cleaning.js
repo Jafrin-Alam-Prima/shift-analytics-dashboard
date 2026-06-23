@@ -53,14 +53,14 @@ const HOURS_TOLERANCE = 0.1; // how far HOURS may drift from start-end before we
 
 // Issue types and the human label shown in the UI.
 export const ISSUE_LABELS = {
-  missingStart: "Missing start time",
-  missingEnd: "Missing end time",
-  badDate: "Invalid date",
-  negativeHours: "Negative hours",
-  hoursConflict: "Hours ≠ start–end",
-  crossMidnight: "Cross-midnight shift",
-  duplicate: "Duplicate row",
-  reasonCase: "Reason needs tidying",
+  missingStart: "Start time missing",
+  missingEnd: "End time missing",
+  badDate: "Date not recognised",
+  negativeHours: "Hours below zero",
+  hoursConflict: "Recorded time didn't match start–end",
+  crossMidnight: "Shift crossed midnight",
+  duplicate: "Duplicate record",
+  reasonCase: "Label spelled inconsistently",
 };
 
 // Detect the issues on one logical row. Pure: returns a list of issue types.

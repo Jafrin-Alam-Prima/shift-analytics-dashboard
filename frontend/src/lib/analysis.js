@@ -372,9 +372,9 @@ export function decisionCards(ctx) {
     cards.push({
       key: "driver",
       severity,
-      title: `${top.reason} is the largest downtime driver`,
-      evidence: `${top.reason} accounts for ${hrs(top.hours)} of downtime — ${pct(top.pct)} of the ${hrs(report.downtimeTotal)} lost in this period${incidents ? `, across ${incidents} incident${incidents === 1 ? "" : "s"}` : ""}. It is the single biggest contributor among the tracked failure categories.`,
-      action: `→ Prioritise ${top.reason}: it is the largest recoverable lever. Target: halving its ${hrs(top.hours)} would return about ${hrs(top.hours / 2)} of capacity.`,
+      title: `${top.reason} caused the most lost time`,
+      evidence: `${top.reason} accounts for ${hrs(top.hours)} of lost time — ${pct(top.pct)} of the ${hrs(report.downtimeTotal)} lost this period${incidents ? `, across ${incidents} incident${incidents === 1 ? "" : "s"}` : ""}. It's the single biggest cause among the failure categories.`,
+      action: `→ Tackle ${top.reason} first — it's the biggest win available. Halving its ${hrs(top.hours)} would give back about ${hrs(top.hours / 2)}.`,
     });
   }
 
@@ -384,23 +384,23 @@ export function decisionCards(ctx) {
     const gap = off.score - target;
     const failureHours = Math.max(0, off.total - off.productive);
     const severity = gap >= 0 ? "good" : gap >= -5 ? "warning" : "critical";
-    let evidence = `Official efficiency is ${pct(off.score)} against the configured ${num(target, 0)}% target — ${gap >= 0 ? `${num(gap)} pts above` : `${num(-gap)} pts below`}. `;
+    let evidence = `Efficiency is ${pct(off.score)}, against a ${num(target, 0)}% goal — ${num(Math.abs(gap))} ${gap >= 0 ? "over" : "under"}. `;
     let action;
     if (failureHours > 0 && off.total - failureHours / 2 > 0) {
       const projected = (off.productive / (off.total - failureHours / 2)) * 100;
-      evidence += `${failureList} account for ${hrs(failureHours)} of the ${hrs(off.total)} logged. As arithmetic: avoiding half of that downtime would lift efficiency to about ${pct(projected)}.`;
-      action = `→ ${gap >= 0 ? "Hold the margin by keeping" : "Close the gap by cutting"} downtime in the ${failureList}. Target: ~${pct(projected)} efficiency by halving those losses.`;
+      evidence += `${failureList} account for ${hrs(failureHours)} of the ${hrs(off.total)} tracked. If you avoided half of that lost time, efficiency would rise to about ${pct(projected)}.`;
+      action = `→ ${gap >= 0 ? "Stay ahead by keeping" : "Close the gap by cutting"} time lost in the ${failureList}. Aim for about ${pct(projected)} efficiency by halving those losses.`;
     } else {
-      evidence += `No failure-category downtime was recorded, so there is no efficiency loss to recover here.`;
-      action = `→ Maintain current practice — efficiency is at or above target with no recorded failure downtime.`;
+      evidence += `No time was lost to failures, so there's nothing to recover here.`;
+      action = `→ Keep it up — efficiency is at or above the goal with no time lost to failures.`;
     }
     cards.push({
       key: "efficiency",
       severity,
       title:
         gap >= 0
-          ? `Efficiency is ${num(gap)} pts above the ${num(target, 0)}% target`
-          : `Efficiency is ${num(-gap)} pts below the ${num(target, 0)}% target`,
+          ? `Efficiency is ${num(gap)} over the ${num(target, 0)}% goal`
+          : `Efficiency is ${num(-gap)} under the ${num(target, 0)}% goal`,
       evidence,
       action,
     });
@@ -413,13 +413,13 @@ export function decisionCards(ctx) {
     const medium = severityBands && severityBands.medium;
     const band = high != null && s.hours >= high ? "high" : medium != null && s.hours >= medium ? "medium" : "low";
     const severity = band === "high" ? "critical" : band === "medium" ? "warning" : "info";
-    const more = streaks.length > 1 ? ` It was one of ${streaks.length} such clusters in the period.` : "";
+    const more = streaks.length > 1 ? ` It was one of ${streaks.length} such runs in the period.` : "";
     cards.push({
       key: "streak",
       severity,
-      title: `Breakdowns clustered over ${s.lengthDays} consecutive day${s.lengthDays === 1 ? "" : "s"}`,
-      evidence: `Failures fell on ${s.lengthDays} consecutive day(s), ${shortDate(s.start)}–${shortDate(s.end)}, totalling ${hrs(s.hours)} across ${s.count} shift${s.count === 1 ? "" : "s"} — a ${band}-severity streak.${more}`,
-      action: `→ Review the ${shortDate(s.start)}–${shortDate(s.end)} shifts side by side. The clustering is a pattern that suggests a recurring condition worth investigating before it repeats.`,
+      title: `Breakdowns hit ${s.lengthDays} day${s.lengthDays === 1 ? "" : "s"} in a row`,
+      evidence: `Breakdowns happened on ${s.lengthDays} day${s.lengthDays === 1 ? "" : "s"} in a row, ${shortDate(s.start)}–${shortDate(s.end)}, losing ${hrs(s.hours)} across ${s.count} shift${s.count === 1 ? "" : "s"} — a ${band}-severity streak.${more}`,
+      action: `→ Look at the ${shortDate(s.start)}–${shortDate(s.end)} shifts together. Several breakdowns in a row often points to one underlying cause worth finding before it happens again.`,
     });
   }
 
@@ -430,14 +430,14 @@ export function decisionCards(ctx) {
     if (report.wow) {
       const w = report.wow;
       const dir = w.downtimeDelta <= 0 ? "fell" : "rose";
-      wowText = ` Week over week, downtime ${dir} by ${hrs(Math.abs(w.downtimeDelta))}${w.downtimePctChange == null ? "" : ` (${num(Math.abs(w.downtimePctChange))}%)`}.`;
+      wowText = ` Compared with the week before, time lost ${dir} by ${hrs(Math.abs(w.downtimeDelta))}${w.downtimePctChange == null ? "" : ` (${num(Math.abs(w.downtimePctChange))}%)`}.`;
     }
     cards.push({
       key: "worstday",
       severity: "warning",
-      title: `${shortDate(pk.dateKey)} was the worst day for downtime`,
-      evidence: `The highest single-day downtime was ${hrs(pk.hours)} on ${shortDate(pk.dateKey)}.${wowText}`,
-      action: `→ Compare the ${shortDate(pk.dateKey)} shift logs against a normal day. A concentration like this is worth a closer look to tell a one-off from a recurring issue.`,
+      title: `${shortDate(pk.dateKey)} was the worst day for lost time`,
+      evidence: `The most time lost in a single day was ${hrs(pk.hours)}, on ${shortDate(pk.dateKey)}.${wowText}`,
+      action: `→ Compare the ${shortDate(pk.dateKey)} shifts with a normal day. A spike like this is worth a closer look to tell a one-off from a recurring problem.`,
     });
   }
 
@@ -449,9 +449,9 @@ export function decisionCards(ctx) {
     cards.push({
       key: "shift",
       severity: "info",
-      title: `Activity concentrates in the ${lower} shift`,
-      evidence: `The ${lower} window logged the most records (${num(busiest.count, 0)}) and ${hrs(busiest.hours)} of time — more than any other shift in this period.`,
-      action: `→ ${busiest.label} is where work, and any issues, concentrate. If shift resourcing or maintenance windows are adjustable, that's the window to watch — worth confirming the timing is expected.`,
+      title: `Most activity is in the ${lower} shift`,
+      evidence: `The ${lower} shift logged the most records (${num(busiest.count, 0)}) and ${hrs(busiest.hours)} of time — more than any other shift this period.`,
+      action: `→ ${busiest.label} is where the work, and most issues, land. If you can adjust staffing or maintenance windows, that's the shift to watch.`,
     });
   }
 

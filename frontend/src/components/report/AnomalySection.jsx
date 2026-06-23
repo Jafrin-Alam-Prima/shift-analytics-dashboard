@@ -51,28 +51,28 @@ function hhmm(d) {
 function explain(type, orig, rec) {
   switch (type) {
     case "missingStart":
-      return `Start time is missing or invalid${orig.start ? ` ("${orig.start}")` : ""}.`;
+      return `Start time is missing or can't be read${orig.start ? ` ("${orig.start}")` : ""}.`;
     case "missingEnd":
-      return `End time is missing or invalid${orig.end ? ` ("${orig.end}")` : ""}.`;
+      return `End time is missing or can't be read${orig.end ? ` ("${orig.end}")` : ""}.`;
     case "badDate":
-      return `Date "${orig.date}" is not a valid calendar date.`;
+      return `Date "${orig.date}" isn't a real calendar date.`;
     case "negativeHours":
-      return `HOURS is negative (${orig.hours}).`;
+      return `Recorded hours are negative (${orig.hours}).`;
     case "hoursConflict": {
       if (rec.start && rec.end) {
         const dur = (rec.end - rec.start) / 3600000;
-        return `HOURS=${orig.hours} but start–end=${num(dur)}h.`;
+        return `Recorded ${orig.hours} h, but start–end is ${num(dur)} h.`;
       }
-      return `HOURS=${orig.hours} disagrees with the start–end times.`;
+      return `Recorded ${orig.hours} h doesn't match the start–end times.`;
     }
     case "crossMidnight":
       return rec.start && rec.end
         ? `Shift crosses midnight (${hhmm(rec.start)} → ${hhmm(rec.end)} next day).`
         : "Shift crosses midnight.";
     case "duplicate":
-      return "Identical to another row (duplicate).";
+      return "Identical to another record (duplicate).";
     case "reasonCase":
-      return `Reason "${orig.reason}" needs trimming/tidying.`;
+      return `Label "${orig.reason}" needs tidying.`;
     default:
       return ISSUE_LABELS[type] || type;
   }
@@ -111,9 +111,10 @@ export default function AnomalySection({ dash }) {
 
   return (
     <section className="card report-section">
-      <h2>Data integrity &amp; quality</h2>
+      <h2>Data quality check</h2>
+      <p className="section-subtitle">What we found and fixed in the raw data before counting anything.</p>
 
-      <h4>Detected issues by severity</h4>
+      <h4>Issues found, by severity</h4>
       <div className="kpi-row">
         {TIERS.map((t) => (
           <div key={t.key} className={`kpi tile-${t.key === "critical" ? "bad" : t.key === "warning" ? "warn" : "neutral"}`}>
@@ -123,11 +124,11 @@ export default function AnomalySection({ dash }) {
         ))}
       </div>
 
-      <h4>Clean vs flagged rows</h4>
+      <h4>Clean records vs records with issues</h4>
       <SeverityBar severity={rowComposition} clean={cleanRows} />
 
       {entries.length === 0 ? (
-        <p className="muted">No anomalies — the data is clean.</p>
+        <p className="muted">No issues found — the data is clean.</p>
       ) : (
         TIERS.map((t) => {
           const rows = entries.filter((e) => e.tier === t.key);
@@ -140,7 +141,7 @@ export default function AnomalySection({ dash }) {
               <ul className="anomaly-list">
                 {rows.map((e, i) => (
                   <li key={i}>
-                    <strong>{e.label}</strong> — {e.text} <span className="muted">(row {e.row})</span>
+                    <strong>{e.label}</strong> — {e.text} <span className="muted">(record {e.row})</span>
                     {e.handled && <span className="muted"> · handled: {e.handled}</span>}
                   </li>
                 ))}
