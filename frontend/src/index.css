@@ -398,6 +398,16 @@ h4 {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .card {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -405,6 +415,8 @@ h4 {
   box-shadow: var(--shadow-sm);
   padding: var(--sp-4) var(--sp-5);
   margin-bottom: var(--sp-4);
+  /* subtle entrance/view-switch fade (disabled under prefers-reduced-motion) */
+  animation: fadeIn 0.25s ease both;
 }
 .card h3 {
   margin-top: 0;
@@ -1796,11 +1808,32 @@ input:focus-visible {
 [data-theme="dark"] .streak-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
-/* calendar day hover ring (keeps any severity outline underneath) */
+/* calendar day hover ring (keeps any severity outline underneath); the
+   background also tweens when the filtered data changes the day's intensity */
 .cal-cell:not(.cal-empty) {
-  transition: box-shadow 0.12s ease;
+  transition: box-shadow 0.12s ease, background-color 0.35s ease;
 }
 .cal-cell:not(.cal-empty):hover {
   box-shadow: 0 0 0 2px var(--accent);
   cursor: default;
+}
+
+/* ---- respect prefers-reduced-motion: drop the entrance fade, hover lifts, and
+   the longer colour tweens (Chart.js tweens are disabled in ChartCanvas) ---- */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+  .kpi,
+  .decision-card,
+  .streak-card,
+  .mini-chart,
+  .cal-cell:not(.cal-empty) {
+    transition: none;
+  }
+  .kpi:hover,
+  .decision-card:hover,
+  .streak-card:hover {
+    transform: none;
+  }
 }

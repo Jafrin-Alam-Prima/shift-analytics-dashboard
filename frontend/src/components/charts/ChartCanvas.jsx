@@ -45,13 +45,35 @@ export default function ChartCanvas({ config, height = 320, label, downloadName 
     return () => obs.disconnect();
   }, []);
 
+  // create / rebuild on mount + theme toggle only — a full rebuild so the new
+  // token colours (axes, tooltip) take effect.
   useEffect(() => {
     if (!canvasRef.current) return undefined;
     applyChartDefaults();
     const chart = new Chart(canvasRef.current, config);
     chartRef.current = chart;
-    return () => chart.destroy();
-  }, [config, theme]);
+    return () => {
+      chart.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]);
+
+  // on data/config change (not theme): update the existing chart in place so
+  // Chart.js tweens to the new values (~360ms, easeOutQuart) instead of snapping.
+  // Honour prefers-reduced-motion by disabling the tween.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    chart.data = config.data;
+    chart.options = { ...(config.options || {}), animation: reduce ? false : { duration: 360, easing: "easeOutQuart" } };
+    chart.update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config]);
 
   function savePng() {
     const chart = chartRef.current;
