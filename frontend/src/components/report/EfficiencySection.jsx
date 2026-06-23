@@ -46,8 +46,8 @@ export default function EfficiencySection({ dash }) {
           {
             label: "Efficiency %",
             data: rep.byWeek.map((w) => (w.score == null ? null : Number(w.score.toFixed(1)))),
-            borderColor: "#2480c9",
-            backgroundColor: "rgba(36,128,201,0.15)",
+            borderColor: "#1e5ba8",
+            backgroundColor: "rgba(30,91,168,0.15)",
             tension: 0.3,
             spanGaps: true,
             fill: true,

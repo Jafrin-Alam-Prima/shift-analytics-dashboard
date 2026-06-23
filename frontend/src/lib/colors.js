@@ -20,7 +20,7 @@ export const CHART_COLORS = {
   downtime: "#dc2626",
   downtimeWorst: "#7f1d1d",
   reference: "#7c93ad",
-  brand: "#2480c9",
+  brand: "#1e5ba8",
 };
 
 // Chart.js styling resolved from the live CSS tokens, so every chart matches the

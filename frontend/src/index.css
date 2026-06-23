@@ -18,7 +18,7 @@
 
   /* ---- brand (Renata-style corporate blue) ---- */
   --brand-navy: #0e3f7e; /* header bar, sidebar, headings, KPI figures, logo */
-  --coral: #e8794b; /* secondary accent — used sparingly */
+  --coral: #e27b54; /* secondary accent — used sparingly on interactive controls */
 
   /* ---- neutral surface scale (blue / white) ---- */
   --bg: #f5f8fc; /* app background (very light blue-gray) */
@@ -31,16 +31,16 @@
   --heading: var(--brand-navy); /* headings + KPI figures */
 
   /* ---- accent + semantic roles ---- */
-  --accent: #2480c9; /* links, active nav, buttons, interactive */
-  --accent-soft: rgba(36, 128, 201, 0.12);
+  --accent: #1e5ba8; /* links, active nav, buttons, interactive */
+  --accent-soft: rgba(30, 91, 168, 0.12);
   --danger: #dc2626;
   --warning: #d97706;
   --success: #16a34a;
-  --info: #2480c9;
+  --info: #1e5ba8;
   --danger-soft: rgba(220, 38, 38, 0.1);
   --warning-soft: rgba(217, 119, 6, 0.12);
   --success-soft: rgba(22, 163, 74, 0.1);
-  --info-soft: rgba(36, 128, 201, 0.12);
+  --info-soft: rgba(30, 91, 168, 0.12);
   /* back-compat aliases (existing rules reference these) */
   --good: var(--success);
   --warn: var(--warning);
@@ -73,16 +73,16 @@
   --line: #21477a; /* navy border */
   --line-blue: #2e5b92;
   --heading: #d6e4fb; /* light headings / KPI figures on dark */
-  --accent: #4f9fe0;
-  --accent-soft: rgba(79, 159, 224, 0.2);
+  --accent: #3b82f6; /* mid blue: white text passes on it + stands out on navy */
+  --accent-soft: rgba(59, 130, 246, 0.22);
   --danger: #f87171;
   --warning: #fbbf24;
   --success: #34d399;
-  --info: #4f9fe0;
+  --info: #3b82f6;
   --danger-soft: rgba(248, 113, 113, 0.18);
   --warning-soft: rgba(251, 191, 36, 0.18);
   --success-soft: rgba(52, 211, 153, 0.18);
-  --info-soft: rgba(79, 159, 224, 0.2);
+  --info-soft: rgba(59, 130, 246, 0.22);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
   /* --brand-navy and --coral inherit from :root (the chrome stays brand navy) */
@@ -211,9 +211,12 @@ h4 {
   color: #fff;
 }
 .side-link.active {
-  background: var(--accent);
+  /* subtle highlight + accent-blue indicator bar reads clearly on the navy
+     sidebar in both themes, with fully AA-readable white text */
+  background: rgba(255, 255, 255, 0.14);
   color: #fff;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
+  box-shadow: inset 3px 0 0 0 var(--accent);
 }
 
 /* separated "Methodology" group (Data Quality) below the analytical views */
@@ -279,6 +282,17 @@ h4 {
 }
 .topbar .trust-chip {
   border-color: rgba(255, 255, 255, 0.35);
+}
+/* the primary action (Export) is coral, echoing Renata's orange CTA on navy */
+.topbar .export-menu .icon-btn {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #fff;
+}
+.topbar .export-menu .icon-btn:hover {
+  background: #d56b46;
+  border-color: #d56b46;
+  color: #fff;
 }
 .menu-btn {
   display: none;
