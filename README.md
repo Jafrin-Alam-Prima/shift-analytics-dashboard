@@ -13,18 +13,55 @@ It runs two ways:
 
 ---
 
+## Run in one click (Windows)
+
+No IDE or terminal required: **double-click `run.bat`** in this folder (or run `run.bat` from Command
+Prompt). It checks for Node.js, installs the dependencies on first run, launches the app, and opens
+<http://localhost:5173> in your browser. Keep the window open while you use the app; press `Ctrl+C`
+(or close the window) to stop.
+
+> Requires **Node.js 18+** ([nodejs.org](https://nodejs.org/)). If a Python backend virtual
+> environment is set up, `run.bat` also starts it on port 8000 — but it's optional; the dashboard is
+> fully functional without it.
+
+On macOS / Linux, `./run.sh` does the same thing. Prefer the command line? Use the Quick start or
+manual steps below.
+
+---
+
 ## Features
 
-- Six analytical views: **Overview**, **Shift analysis**, **Breakdown streaks**, **Efficiency**,
-  **Trends**, and **Insights**.
-- **Data quality** — automatic detection, documentation, and handling of operational inconsistencies,
-  with a Methodology page that documents every detection rule and how each issue was handled.
-- **Breakdown-streak detection** with clearly documented assumptions.
-- **Operational Efficiency Score** = (Productive ÷ Total) × 100.
-- **At least three operational insights** a plant manager can act on.
-- **Filtering** by any combination of date range, reason, group, hours, and type.
-- **Stays correct when new activity categories appear** — fully dynamic, with no hardcoded categories.
-- **Export** (cleaned CSV, Markdown report, chart PNGs, print) and **dark mode**.
+From a raw, messy CSV to a decision-ready operations dashboard — cleaned, analyzed, and explained,
+with every number reproducible.
+
+**A complete analytics workspace.** Six purpose-built views — Overview, Shift analysis, Breakdown
+streaks, Efficiency, Trends, and Insights — each answering a specific operational question, with
+filtering across date, reason, group, hours, and type in any combination.
+
+**A real data-cleaning engine, not a black box.** Automatically detects eight classes of operational
+inconsistency — impossible and negative hours, invalid dates, hours-vs-timestamp mismatches,
+cross-midnight shifts, missing timestamps, exact duplicates, and inconsistent category labels —
+documents every rule on a dedicated Methodology page, and handles each one transparently, with
+auditable, reversible per-row corrections and suggestion-only fuzzy matching for typo'd categories.
+Raw in, clean out, fully explained.
+
+**Operations analysis that means something.** A documented breakdown-streak detector that surfaces
+recurring failure clusters; an Operational Efficiency Score — (Productive ÷ Total) × 100; and at least
+three data-derived insights written as plant-manager decision cards (finding → evidence → a concrete,
+measurable action).
+
+**Visualizations that tell the story.** A floating shift timeline, a month-style downtime calendar,
+day-of-week patterns, week-over-week comparisons, a Pareto of top downtime drivers, and
+severity-graded data-quality bars — all themed for light and dark mode.
+
+**Built to last — and to scale.** Fully dynamic: a brand-new activity category flows into every chart,
+legend, and calculation with zero code changes. Dual-engine by design — everything computes in the
+browser (the canonical result), while an optional Django + pandas backend mirrors the exact logic, and
+a parity check proves the two engines agree to the decimal. Backed by ~131 automated tests.
+
+**Polished, professional UI.** A token-driven design system (Inter typography, consistent
+type / color / spacing scales), responsive layout, dark mode, and one-click export to cleaned CSV,
+Markdown report, chart PNGs, or print.
 
 ---
 
@@ -193,6 +230,8 @@ shift-analytics-dashboard/
 │   └── src/state/        # useDashboard (wires the whole pipeline together)
 ├── backend/              # optional Django + DRF + pandas API (mirrors the logic)
 ├── scripts/              # parity check and helpers
+├── run.bat               # Windows one-click launcher (double-click to run)
+├── run.sh                # macOS / Linux one-click launcher
 ├── setup.sh              # one-command setup
 └── README.md
 ```
