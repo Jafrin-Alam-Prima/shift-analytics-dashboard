@@ -77,16 +77,22 @@ export default function DowntimeCalendar({ byDate, datesWithData, streakDayBand,
                   {cells.map((d, i) => {
                     if (d == null) return <div key={`e${i}`} className="cal-cell cal-empty" />;
                     const key = `${yy}-${pad(mm)}-${pad(d)}`;
-                    const has = datesWithData.has(key);
-                    const info = byDate[key];
+                    // only days within the dataset's actual first–last date are live;
+                    // month-padding days before the first / after the last date are
+                    // read-only and disabled (muted, not hoverable, not clickable)
+                    const inRange = !!(range.min && range.max && key >= range.min && key <= range.max);
+                    const has = inRange && datesWithData.has(key);
+                    const info = has ? byDate[key] : undefined;
                     const h = info ? info.hours : 0;
                     const count = info ? info.count : 0;
-                    const band = streakDayBand[key];
+                    const band = inRange ? streakDayBand[key] : undefined;
                     const intensity = h > 0 ? 0.18 + 0.82 * (h / maxHours) : 0;
-                    const bg = !has ? "var(--soft)" : h > 0 ? `rgba(220,38,38,${intensity.toFixed(2)})` : "var(--panel)";
+                    const bg = !inRange ? "transparent" : !has ? "var(--soft)" : h > 0 ? `rgba(220,38,38,${intensity.toFixed(2)})` : "var(--panel)";
                     const reasons = info ? [...new Set(info.incidents.map((it) => it.reason))] : [];
-                    const cls = `cal-cell${has ? "" : " cal-nodata"}${band ? ` ${SEV_CLASS[band]}` : ""}${sel === key ? " cal-selected" : ""}`;
-                    const title = !has
+                    const cls = `cal-cell${!inRange ? " cal-out" : has ? "" : " cal-nodata"}${band ? ` ${SEV_CLASS[band]}` : ""}${sel === key ? " cal-selected" : ""}`;
+                    const title = !inRange
+                      ? `${shortDate(key)} · outside the data range`
+                      : !has
                       ? `${shortDate(key)} · no data`
                       : `${shortDate(key)} · ${hrs(h)} lost · ${count} incident${count === 1 ? "" : "s"}${band ? ` · in a ${band} streak` : ""}${reasons.length ? ` · ${reasons.join(", ")}` : ""}`;
                     return (
@@ -98,6 +104,7 @@ export default function DowntimeCalendar({ byDate, datesWithData, streakDayBand,
                         role={has ? "button" : undefined}
                         tabIndex={has ? 0 : undefined}
                         aria-pressed={has ? sel === key : undefined}
+                        aria-disabled={inRange ? undefined : true}
                         aria-label={has ? title : undefined}
                         onClick={has ? () => toggle(key) : undefined}
                         onKeyDown={

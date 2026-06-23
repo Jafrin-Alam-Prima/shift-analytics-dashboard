@@ -1853,16 +1853,26 @@ input:focus-visible {
 .cal-cell:not(.cal-empty) {
   transition: box-shadow 0.12s ease, background-color 0.35s ease;
 }
-.cal-cell:not(.cal-empty):hover {
+/* only live (in-range, has-data) days are hoverable-for-selection */
+.cal-cell[role="button"]:hover {
   box-shadow: 0 0 0 2px var(--accent);
 }
 /* clickable days (those present in the data) read as interactive + selectable */
 .cal-cell[role="button"] {
   cursor: pointer;
 }
-.cal-cell:not(.cal-empty):focus-visible {
+.cal-cell[role="button"]:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--accent);
+}
+/* days outside the dataset's date range: read-only, faded, not interactive */
+.cal-cell.cal-out {
+  border-color: transparent;
+  opacity: 0.4;
+  cursor: default;
+}
+.cal-cell.cal-out .cal-day {
+  color: var(--muted);
 }
 .cal-cell.cal-selected {
   box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px var(--accent-soft);

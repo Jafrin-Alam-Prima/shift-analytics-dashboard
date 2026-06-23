@@ -128,11 +128,23 @@ export default function FilterBar({ dash }) {
             </div>
             <label className="filter-field">
               <span className="seg-label">From</span>
-              <input type="date" value={filters.dateFrom} onChange={(e) => setFilter("dateFrom", e.target.value)} />
+              <input
+                type="date"
+                value={filters.dateFrom}
+                min={datasetDates.min || undefined}
+                max={datasetDates.max || undefined}
+                onChange={(e) => setFilter("dateFrom", e.target.value)}
+              />
             </label>
             <label className="filter-field">
               <span className="seg-label">To</span>
-              <input type="date" value={filters.dateTo} onChange={(e) => setFilter("dateTo", e.target.value)} />
+              <input
+                type="date"
+                value={filters.dateTo}
+                min={datasetDates.min || undefined}
+                max={datasetDates.max || undefined}
+                onChange={(e) => setFilter("dateTo", e.target.value)}
+              />
             </label>
           </div>
 
