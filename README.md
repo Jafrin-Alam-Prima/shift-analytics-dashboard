@@ -47,7 +47,7 @@ Switch between focused views in the sidebar:
 * **Additional visualizations:** Downtime calendar, day-of-week patterns, week-over-week comparisons, Pareto analysis of downtime drivers, trend analysis, and data-quality monitoring.
 * **Breakdown streak detection:** Identifies recurring breakdown periods using a documented methodology and clearly stated assumptions.
 * **Operational Efficiency Score:** Calculates `(Productive Hours ÷ Total Hours) × 100`, where Productive Hours exclude Breakdown and Unknown Failure activities.
-* **Actionable operational insights:** Generates at least three data-driven insights with supporting evidence and recommended actions for plant managers.
+* **Actionable operational insights:** Generates data-driven insights with supporting evidence and recommended actions for plant managers.
 * **Dynamic category handling:** New activity categories automatically flow into filters, calculations, charts, and reports without code changes.
 * **Dual-engine validation:** Browser-based analytics with a Django + pandas backend that mirrors the same logic and supports parity verification.
 * **Export & reporting:** Export cleaned datasets, Markdown reports, chart images, and print-ready summaries.
