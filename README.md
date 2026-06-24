@@ -72,27 +72,6 @@ Switch between focused views in the sidebar:
 - Python 3.11–3.13 (only needed for the backend mode)
 
 ---
-
-## Quick start (one command)
-
-```bash
-git clone https://github.com/Jafrin-Alam-Prima/shift-analytics-dashboard.git
-cd shift-analytics-dashboard
-./setup.sh
-cd frontend && npm run dev
-```
-
-Then open the URL Vite prints — usually <http://localhost:5173>. The app loads a sample dataset
-automatically.
-
-> **Windows:** run `./setup.sh` in **Git Bash**, or follow the manual steps below.
-
-`setup.sh` installs the frontend dependencies and, if Python is present, creates the backend virtual
-environment, installs its dependencies, and migrates the database. If no Python is found it skips the
-backend gracefully — local mode still works.
-
----
-
 ## Manual setup
 
 ### 1. Frontend (local mode — fully functional on its own)
@@ -129,7 +108,25 @@ Then in the app, open **Settings** (the gear, top-right) and set **Source** to *
 backend when it is running, falls back to local when it is not) or **Backend**.
 
 ---
+## Quick start (one command)
 
+```bash
+git clone https://github.com/Jafrin-Alam-Prima/shift-analytics-dashboard.git
+cd shift-analytics-dashboard
+./setup.sh
+cd frontend && npm run dev
+```
+
+Then open the URL Vite prints — usually <http://localhost:5173>. The app loads a sample dataset
+automatically.
+
+> **Windows:** run `./setup.sh` in **Git Bash**, or follow the manual steps below.
+
+`setup.sh` installs the frontend dependencies and, if Python is present, creates the backend virtual
+environment, installs its dependencies, and migrates the database. If no Python is found it skips the
+backend gracefully — local mode still works.
+
+---
 ## Using the app
 
 - The app loads a bundled sample CSV on start.
