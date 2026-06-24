@@ -38,23 +38,6 @@ Switch between focused views in the sidebar:
 > they now live on the Overview.
 
 ---
-
-## Run in one click (Windows)
-
-No IDE or terminal required: **double-click `run.bat`** in this folder (or run `run.bat` from Command
-Prompt). It checks for Node.js, installs the dependencies on first run, launches the app, and opens
-<http://localhost:5173> in your browser. Keep the window open while you use the app; press `Ctrl+C`
-(or close the window) to stop.
-
-> Requires **Node.js 18+** ([nodejs.org](https://nodejs.org/)). If a Python backend virtual
-> environment is set up, `run.bat` also starts it on port 8000 — but it's optional; the dashboard is
-> fully functional without it.
-
-On macOS / Linux, `./run.sh` does the same thing. Prefer the command line? Use the Quick start or
-manual steps below.
-
----
-
 ## Features
 
 * **Six analytical views:** Overview, Shift Analysis, Breakdown Streaks, Efficiency, Trends, and Insights.
