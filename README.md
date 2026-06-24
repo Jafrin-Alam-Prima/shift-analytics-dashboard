@@ -1,6 +1,6 @@
 # Shift Analytics Dashboard
 
-**Live demo: [shift-analytics-dashboard.vercel.app](https://shift-analytics-dashboard.vercel.app)**
+**Live Link: [shift-analytics-dashboard.vercel.app](https://shift-analytics-dashboard.vercel.app)**
 
 ![The Shift Analytics Dashboard — Overview](docs/overview.png)
 
